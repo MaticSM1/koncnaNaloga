@@ -1,0 +1,17 @@
+INTERNET
+- podatkovno bazo
+- kamera, gps
+- scraper
+
+VID
+- prepoznava obraza
+- mobilna aplikacija
+- docker
+
+NPO
+- Zajem senzorskih podatkov
+- MQTT
+
+ADMINISTRACIJA
+- docker
+- cevvovod
