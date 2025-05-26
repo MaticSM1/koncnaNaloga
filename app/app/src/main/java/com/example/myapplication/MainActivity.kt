@@ -1,79 +1,117 @@
 package com.example.myapplication
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.Button
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
-    private val CAMERA_PERMISSION_CODE = 100
-    private val CAMERA_REQUEST_CODE = 101
+    private lateinit var previewView: PreviewView
     private lateinit var imageView: ImageView
+    private lateinit var imageCapture: ImageCapture
+    private lateinit var cameraExecutor: ExecutorService
+    private val handler = Handler(Looper.getMainLooper())
+    private val interval: Long = 5000 // 5 sekund
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val button: Button = findViewById(R.id.button)
+        previewView = findViewById(R.id.previewView)
         imageView = findViewById(R.id.image_view)
 
-        button.setOnClickListener {
-            checkCameraPermission()
-        }
-    }
-
-    private fun checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_PERMISSION_CODE
-            )
+        if (allPermissionsGranted()) {
+            startCamera()
         } else {
-            openCamera()
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.CAMERA), 1
+            )
         }
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun openCamera() {
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE)
-    }
+    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
+        this, Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera()
-            } else {
-                Toast.makeText(this, "Dovoljenje za kamero zavrnjeno", Toast.LENGTH_SHORT).show()
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
             }
-        }
+
+            imageCapture = ImageCapture.Builder().build()
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+                startRepeatingCapture()
+            } catch (e: Exception) {
+                Log.e("CameraX", "Error starting camera", e)
+            }
+        }, ContextCompat.getMainExecutor(this))
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private fun startRepeatingCapture() {
+        handler.post(object : Runnable {
+            override fun run() {
+                takePhoto()
+                handler.postDelayed(this, interval)
+            }
+        })
+    }
 
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val photo = data?.extras?.get("data")
-            imageView.setImageBitmap(photo as? android.graphics.Bitmap)
-        }
+    private fun takePhoto() {
+        val photoFile = File(
+            externalCacheDir,
+            "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())}.jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                    imageView.setImageBitmap(bitmap)
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
+                }
+            }
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+        handler.removeCallbacksAndMessages(null)
     }
 }
