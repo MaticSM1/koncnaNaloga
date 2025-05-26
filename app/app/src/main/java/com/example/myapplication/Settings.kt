@@ -8,6 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import okhttp3.*
+import org.eclipse.paho.android.service.MqttAndroidClient
+import org.eclipse.paho.client.mqttv3.IMqttActionListener
+import org.eclipse.paho.client.mqttv3.IMqttToken
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import java.io.IOException
 
 class Settings : AppCompatActivity() {
@@ -23,6 +27,11 @@ class Settings : AppCompatActivity() {
         val pingButton = findViewById<Button>(R.id.ping)
         pingButton.setOnClickListener {
             sendPingRequest()
+        }
+
+        val mqttButton = findViewById<Button>(R.id.mqtt)
+        mqttButton.setOnClickListener {
+            connectToMqttBroker()
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -51,6 +60,31 @@ class Settings : AppCompatActivity() {
                     } else {
                         Toast.makeText(this@Settings, "Ping error: ${response.code}", Toast.LENGTH_SHORT).show()
                     }
+                }
+            }
+        })
+    }
+
+    private fun connectToMqttBroker() {
+        val mqttClient = MqttAndroidClient(
+            applicationContext,
+            "tcp://broker.hivemq.com:1883",
+            "AndroidClient" + System.currentTimeMillis()
+        )
+        val options = MqttConnectOptions().apply {
+            isCleanSession = true
+        }
+
+        mqttClient.connect(options, null, object : IMqttActionListener {
+            override fun onSuccess(asyncActionToken: IMqttToken?) {
+                runOnUiThread {
+                    Toast.makeText(this@Settings, "Connected to MQTT broker!", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                runOnUiThread {
+                    Toast.makeText(this@Settings, "Failed to connect: ${exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         })
