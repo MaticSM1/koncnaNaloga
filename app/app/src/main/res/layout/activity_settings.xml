@@ -4,27 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".Settings">
 
-    <Button
-        android:id="@+id/login_button"
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pojdi v Login"
+        android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_button" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/settings_button"
+        android:id="@+id/ping"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Podji v settings"
-        app:layout_constraintBottom_toTopOf="@+id/login_button"
+        android:layout_marginTop="84dp"
+        android:text="ping"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
