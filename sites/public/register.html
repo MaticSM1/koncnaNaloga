@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prijava - Kaj je v hrani</title>
+    <title>Registracija - Kaj je v hrani</title>
     <link rel="stylesheet" href="/public/main.css">
-
 </head>
 
 <body>
@@ -25,14 +24,14 @@
         </header>
 
         <main>
-            <section class="login-section">
-                <div class="login-container">
-                    <div class="login-header">
-                        <h1>Prijava</h1>
-                        <p>Prijavite se v svoj račun</p>
+            <section class="register-section">
+                <div class="register-container">
+                    <div class="register-header">
+                        <h1>Registracija</h1>
+                        <p>Ustvarite nov račun</p>
                     </div>
 
-                    <form class="login-form" onsubmit="handleLogin(event)">
+                    <form class="register-form" onsubmit="handleRegister(event)">
                         <div class="form-group">
                             <label for="email">E-poštni naslov</label>
                             <input type="email" id="email" name="email" placeholder="vasa@eposta.si" required>
@@ -43,21 +42,8 @@
                             <input type="password" id="password" name="password" placeholder="Vnesite geslo" required>
                         </div>
 
-                        <button type="submit" class="login-button">Prijavite se</button>
-
-                        <div class="forgot-password">
-                            <a href="#">Pozabili ste geslo?</a>
-                        </div>
+                        <button type="submit" class="register-button">Registrirajte se</button>
                     </form>
-
-                    <div class="divider">
-                        <span>ALI</span>
-                    </div>
-
-                    <div class="register-link">
-                        <p>Nimate še računa?</p>
-                        <button class="register-button" onclick="window.location.href='/public/register.html'">Ustvarite račun</button>
-                    </div>
                 </div>
             </section>
         </main>
@@ -81,15 +67,14 @@
     </div>
 
     <script>
-        function handleLogin(event) {
+        function handleRegister(event) {
             event.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Simulacija prijave
             if (email && password) {
-                fetch('/api/login', {
+                fetch('/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -101,7 +86,7 @@
                             window.location.href = '/';
                         } else {
                             return response.json().then(data => {
-                                alert(data.message || 'Prijava ni uspela.');
+                                alert(data.message || 'Registracija ni uspela.');
                             });
                         }
                     })
@@ -111,11 +96,6 @@
             } else {
                 alert('Prosimo, izpolnite vsa polja.');
             }
-        }
-
-        function handleRegister() {
-            alert('Preusmerjamo vas na registracijo...');
-            // Tu bi preusmerili na registracijsko stran
         }
     </script>
 </body>
