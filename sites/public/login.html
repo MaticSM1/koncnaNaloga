@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="sl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prijava - Kaj je v hrani</title>
-<link rel="stylesheet" href="/public/main.css">
+    <link rel="stylesheet" href="/public/main.css">
 
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -21,7 +23,7 @@
                 </div>
             </nav>
         </header>
-        
+
         <main>
             <section class="login-section">
                 <div class="login-container">
@@ -29,29 +31,29 @@
                         <h1>Prijava</h1>
                         <p>Prijavite se v svoj račun</p>
                     </div>
-                    
+
                     <form class="login-form" onsubmit="handleLogin(event)">
                         <div class="form-group">
                             <label for="email">E-poštni naslov</label>
                             <input type="email" id="email" name="email" placeholder="vasa@eposta.si" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="password">Geslo</label>
                             <input type="password" id="password" name="password" placeholder="Vnesite geslo" required>
                         </div>
-                        
+
                         <button type="submit" class="login-button">Prijavite se</button>
-                        
+
                         <div class="forgot-password">
                             <a href="#">Pozabili ste geslo?</a>
                         </div>
                     </form>
-                    
+
                     <div class="divider">
                         <span>ALI</span>
                     </div>
-                    
+
                     <div class="register-link">
                         <p>Nimate še računa?</p>
                         <button class="register-button" onclick="handleRegister()">Ustvarite račun</button>
@@ -59,7 +61,7 @@
                 </div>
             </section>
         </main>
-        
+
         <footer>
             <div class="footer-links">
                 <a href="#">O nas</a>
@@ -67,13 +69,13 @@
                 <a href="#">Zasebnost</a>
                 <a href="#">Pomoč</a>
             </div>
-            
+
             <div class="social-icons">
                 <a href="#" class="social-icon">📘</a>
                 <a href="#" class="social-icon">📷</a>
                 <a href="#" class="social-icon">🐦</a>
             </div>
-            
+
             <p>&copy; 2025 Kaj je v hrani. Vse pravice pridržane.</p>
         </footer>
     </div>
@@ -81,23 +83,41 @@
     <script>
         function handleLogin(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            
+
             // Simulacija prijave
             if (email && password) {
-                alert('Uspešno ste se prijavili!');
-                // Tu bi normalno poslali podatke na strežnik
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/';
+                        } else {
+                            return response.json().then(data => {
+                                alert(data.message || 'Prijava ni uspela.');
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        alert('Prišlo je do napake pri povezavi s strežnikom.');
+                    });
             } else {
                 alert('Prosimo, izpolnite vsa polja.');
             }
         }
-        
+
         function handleRegister() {
             alert('Preusmerjamo vas na registracijo...');
             // Tu bi preusmerili na registracijsko stran
         }
     </script>
 </body>
+
 </html>

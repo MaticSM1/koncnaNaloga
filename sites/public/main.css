@@ -385,9 +385,8 @@
         
         .register-link {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 0rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #e0e0e0;
         }
         
         .register-link p {
