@@ -15,7 +15,7 @@ def pridobi_hranilno_tabelo(ean_koda):
     tabela = soup.find('table', {'class': 'vzstatus-table'})
 
     if not tabela:
-        print("Tabela ni bila najdena.")
+        print("Tabela ni nbila najdena.")
         return
 
     print("\n Hranilna tabela za", ean_koda, ":\n")
