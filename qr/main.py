@@ -44,8 +44,19 @@ def preberi_qr_kodo_in_pridobi_podatke(pot_do_slike):
         except ValueError:
             print("QR koda ne vsebuje veljavne številke:", podatki)
             continue
+    
+    else:
+        for koda in kode:
+            podatki = koda.data.decode('utf-8')
 
-        (x, y, w, h) = koda.rect
+            try:
+                ean = str(int(podatki))
+                print("Najdena številka (EAN):", ean)
+                pridobi_hranilno_tabelo(ean)
+            except ValueError:
+                print("QR koda ne vsebuje veljavne številke:", podatki)
+
+            (x, y, w, h) = koda.rect
         cv2.rectangle(slika, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 preberi_qr_kodo_in_pridobi_podatke("IMG_0772.webp")
