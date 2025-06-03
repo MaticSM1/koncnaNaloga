@@ -36,7 +36,14 @@ app.use(express.json());
 app.use('/public', express.static(__dirname + '/sites/public'));
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/sites/main.html');
+      if (req.session) {
+    console.log(req.session.email);
+      }
+    if (req.session && req.session.email) {
+        res.sendFile(__dirname + '/sites/portal.html');
+    } else {
+        res.sendFile(__dirname + '/sites/main.html');
+    }
 });
 
 app.get('/ping', (req, res) => {
@@ -65,6 +72,8 @@ app.post('/register', async (req, res) => {
         }
         await db.collection('users').insertOne({ email, password });
         res.status(201).json({ message: 'User registered successfully' });
+        req.session = { email };
+
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).json({ message: 'Server error', error: err.message });
@@ -72,16 +81,18 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     try {
         const db = client.db('users');
-        const user = await db.collection('users').findOne({ username });
+        const user = await db.collection('users').findOne({ email });
         if (user && user.password === password) {
             res.status(200).json({ message: 'Login successful' });
+            req.session = { email };
         } else {
             res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (err) {
+        console.error('Error during login:', err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
