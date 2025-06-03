@@ -41,6 +41,7 @@ app.use('/public', express.static(__dirname + '/sites/public'));
 
 
 app.get('/', (req, res) => {
+    console.log(req.session);
     if (req.session && req.session.email) {
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
