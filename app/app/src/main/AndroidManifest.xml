@@ -23,6 +23,15 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".Login_second_step"
+            android:exported="false" />
+        <activity
+            android:name=".Cam"
+            android:exported="false" />
+        <activity
+            android:name=".cam"
+            android:exported="false" />
+        <activity
             android:name=".Login"
             android:exported="false" />
         <activity

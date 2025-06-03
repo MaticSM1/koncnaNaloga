@@ -1,3 +1,25 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">MojaDrugaAplikacija</string>
+    <string name="enter_buissnes_name">Enter buissnes name</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_password">Enter password</string>
+    <string name="register">Register</string>
+    <string name="business_login">BUSINESS LOGIN</string>
+    <string name="register_for_business">register for business</string>
+    <string name="enter_food_name">Enter food name</string>
+    <string name="i_want_to_pay_beforehand">I want to pay beforehand</string>
+    <string name="food_order">FOOD ORDER</string>
+    <string name="enter_cvv">Enter CVV</string>
+    <string name="enter_card_number">Enter card number</string>
+    <string name="order_now">Order Now</string>
+    <string name="select_location">Select location</string>
+    <string name="save">SAVE</string>
+    <string name="cancel">CANCEL</string>
+    <string name="login_in_to_platemate">LOGIN IN TO PLATEMATE</string>
+    <string name="already_a_member_log_in">Already a member? Log in</string>
+    <string name="register_for_buissnes">register for buissnes</string>
+    <string name="button">Button</string>
+    <string name="choose_location">Choose location</string>
+    <string name="request">Enter any other requests</string>
+    <string name="back">back</string>
 </resources>

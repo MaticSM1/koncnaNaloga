@@ -2,23 +2,35 @@ package com.example.myapplication
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        val loginButton = findViewById<Button>(R.id.login_button)
-        loginButton.setOnClickListener {
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.loginButton.setOnClickListener {
             val intent = Intent(this, Login::class.java)
             startActivity(intent)
         }
 
-        val settingsButton = findViewById<Button>(R.id.settings_button)
-        settingsButton.setOnClickListener {
+        binding.settingsButton.setOnClickListener {
             val intent = Intent(this, Settings::class.java)
+            startActivity(intent)
+        }
+
+        binding.camButton.setOnClickListener {
+            val intent = Intent(this, Cam::class.java)
+            startActivity(intent)
+        }
+
+        binding.loginSecondStepButton.setOnClickListener{
+            val intent = Intent(this, Login_second_step::class.java)
             startActivity(intent)
         }
     }
