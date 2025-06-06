@@ -2,13 +2,13 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-// Določi pot do sistemskega Chromiuma (najdi pravo s 'which chromium')
-const CHROME_PATH = process.env.CHROME_PATH || '/usr/bin/chromium-browser'; // Prilagodi po potrebi
+// 🔧 Ročno nastavljena pot do sistemskega Chromiuma (ne Snap!)
+const CHROME_PATH = '/usr/bin/chromium-browser';
 
 async function getProductCode(ime) {
   console.log('🔍 Začenjam iskanje izdelka:', ime);
 
-  // Preveri, ali Chromium obstaja
+  // ✅ Preveri, ali Chromium obstaja
   if (!fs.existsSync(CHROME_PATH)) {
     console.error(`❌ Chromium ni najden na poti: ${CHROME_PATH}`);
     return null;
@@ -16,10 +16,17 @@ async function getProductCode(ime) {
 
   let browser;
   try {
+    console.log('🚀 Zaganjam brskalnik (headless)...');
+
     browser = await puppeteer.launch({
       headless: 'new',
       executablePath: CHROME_PATH,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+      ],
     });
 
     const page = await browser.newPage();
@@ -62,9 +69,11 @@ async function getProductCode(ime) {
     const imageSrc = await page.$eval('.slider-image img', img => img.src);
     const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
 
+    // Očisti podatke
     productCode = productCode.replace(/\s+/g, '').trim();
     price = price.replace(/\s+/g, '').replace(/\n/g, '').replace(/[^\d,\.]/g, '');
 
+    // 🔧 Shrani podatke v lokalno datoteko
     const outputDir = path.join(__dirname, '/sites/public/data');
     const productId = productCode.split(':')[1];
     const outputPath = path.join(outputDir, `${productId}.json`);
@@ -83,14 +92,14 @@ async function getProductCode(ime) {
     return productId;
 
   } catch (err) {
-    console.error('❌ Napaka pri getProductCode:', err);
+    console.error('❌ Napaka pri getProductCode:', err.message || err);
     return null;
   } finally {
     if (browser) await browser.close();
   }
 }
 
-// Če želiš ročno testirati:
+// ❗Za lokalni test odkomentiraj spodnjo vrstico:
 // getProductCode('mleko');
 
 module.exports = { getProductCode };
