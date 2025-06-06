@@ -142,6 +142,6 @@ async function getProductCode(ime) {
     }
 }
 
-getProductCode("mleko");
+//getProductCode("mleko");
 
 module.exports = { getProductCode };
