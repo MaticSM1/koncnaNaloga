@@ -8,9 +8,20 @@ if (typeof __dirname === 'undefined') {
 }
 
 async function getProductCode(ime) {
+    // Nastavimo okoljske spremenljivke
+    process.env.PUPPETEER_EXECUTABLE_PATH = '/snap/bin/chromium';
+    process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
+    
     console.log('Zaganjam brskalnik (headless)...');
+    console.log('Uporabljam pot:', '/snap/bin/chromium');
+    
+    // Preverimo, ali datoteka obstaja
+    if (!fs.existsSync('/snap/bin/chromium')) {
+        throw new Error('Chromium ni nameščen. Zaženite: snap install chromium');
+    }
+    
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/chromium-browser', // Določi pot do Chromium
+        executablePath: '/snap/bin/chromium', // Določi pot do Chromium
         headless: 'new', // ali true za starejše različice
         args: [
             '--no-sandbox', 
@@ -18,7 +29,11 @@ async function getProductCode(ime) {
             '--disable-dev-shm-usage',
             '--disable-gpu',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
+            '--disable-features=VizDisplayCompositor',
+            '--disable-extensions',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
         ]
     });
 
