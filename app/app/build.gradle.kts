@@ -65,13 +65,11 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.extensions)
-    implementation(libs.okhttp)
 
     implementation(libs.org.eclipse.paho.client.mqttv3)
     implementation(libs.org.eclipse.paho.android.service)
-    implementation(libs.androidx.localbroadcastmanager)
 
-    implementation ("com.hivemq:hivemq-mqtt-client:1.3.1")
+    implementation (libs.hivemq.mqtt.client)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
