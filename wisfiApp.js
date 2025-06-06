@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const app = express();
 const port = 3000;
+let proxy = process.env.PROXY || "";
 
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
@@ -37,7 +38,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false }
 }));
-app.use('/public', express.static(__dirname + '/sites/public'));
+app.use(`${proxy}/public`, express.static(__dirname + '/sites/public'));
 
 
 app.get('/', (req, res) => {
@@ -52,13 +53,13 @@ app.get('/', (req, res) => {
 });
 
 // Ping test
-app.get('/ping', (req, res) => {
+app.get(`${proxy}/ping`, (req, res) => {
     console.log('Ping');
     res.send('Pong!');
 });
 
 // Logout
-app.get('/logout', (req, res) => {
+app.get(`${proxy}/logout`, (req, res) => {
     req.session.destroy(err => {
         if (err) {
             return res.status(500).send('Napaka pri odjavi');
@@ -68,7 +69,7 @@ app.get('/logout', (req, res) => {
 });
 
 // Register
-app.post('/register', async (req, res) => {
+app.post(`${proxy}/register`, async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ message: 'Email in geslo sta obvezna' });
@@ -89,7 +90,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login
-app.post('/login', async (req, res) => {
+app.post(`${proxy}/login`, async (req, res) => {
     const { email, password } = req.body;
     try {
         const db = client.db('users');

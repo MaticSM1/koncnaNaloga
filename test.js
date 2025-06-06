@@ -1,5 +1,5 @@
 const mqtt = require('mqtt');
-const brokerUrl = 'mqtt://localhost:1888';
+const brokerUrl = 'mqtt://z7.si:1883';
 
 const client = mqtt.connect(brokerUrl);
 
