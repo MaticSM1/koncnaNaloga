@@ -134,15 +134,8 @@ class Cam : AppCompatActivity() {
                                 <p style="text-align:center;">Zamegljena in pobeljena uspešno</p>
                             </body>
                             </html>
-                                                        <html>
-                                                        <body style="background-color:#ffffff;">
-                                                            <h3 style="text-align:center;">Slika je bila obdelana</h3>
-                                                            <p style="text-align:center;">Zamegljena in pobeljena uspešno</p>
-                                                        </body>
-                                                        </html>
                         """.trimIndent()
 
-                        binding.webView.settings.javaScriptEnabled = true
                         binding.webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
                         binding.webView.visibility = View.VISIBLE
 
