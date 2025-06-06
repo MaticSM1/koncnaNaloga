@@ -1,0 +1,15 @@
+name: serverUpdate
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  ping-url:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Poslji za posodobitev
+        run: |
+          curl -X GET "https://z7/ping" || echo "Napaka"
