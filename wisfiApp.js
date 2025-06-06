@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+
 const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "";
@@ -42,6 +43,7 @@ app.use(session({
     cookie: { secure: false }
 }));
 app.use(`${proxy}/public`, express.static(__dirname + '/sites/public'));
+app.set('view engine', 'ejs');
 
 // Routes
 app.get('/', (req, res) => {
@@ -116,6 +118,24 @@ app.get(`${proxy}/getItems`, async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Napaka pri obdelavi', error: err.message });
     }
+});
+
+app.get(`${proxy}/izdelek`, async (req, res) => {
+    const { id } = req.query;
+
+
+    try {
+        const dataPath = path.join(__dirname, 'sites/public/data', `${id}.json`);
+        if (!fs.existsSync(dataPath)) {
+            return res.status(404).send('Izdelek ne obstaja');
+        }
+        const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+        res.render('izdelek', { data });
+    } catch (err) {
+        console.error('Napaka pri branju izdelka:', err);
+        res.status(500).send('Napaka strežnika');
+    }
+
 });
 
 app.listen(port, () => {
