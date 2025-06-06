@@ -9,8 +9,8 @@ def get_data_loaders(data_dir, batch_size=32, input_size=224):
         transforms.Normalize([0.5], [0.5])
     ])
 
-    train_path = os.path.join(data_dir, "Train")
-    test_path = os.path.join(data_dir, "Test")
+    train_path = os.path.join(data_dir, "train")
+    test_path = os.path.join(data_dir, "test")
 
     train_dataset = datasets.ImageFolder(train_path, transform=transform)
     test_dataset = datasets.ImageFolder(test_path, transform=transform)
