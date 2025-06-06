@@ -11,7 +11,7 @@ The application does not request any unnecessary permissions, ensuring user priv
 
 Screenshots of the application will be added soon to showcase its design and functionality.
 
-## Author ✍️
+## Authors ✍️
 
 - **David Pilih**
 - **Matic ŠiŠko Musil**
