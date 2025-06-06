@@ -8,21 +8,37 @@ if (typeof __dirname === 'undefined') {
 }
 
 async function getProductCode(ime) {
-    // Nastavimo okoljske spremenljivke
-    process.env.PUPPETEER_EXECUTABLE_PATH = '/snap/bin/chromium';
-    process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
-    
     console.log('Zaganjam brskalnik (headless)...');
-    console.log('Uporabljam pot:', '/snap/bin/chromium');
     
-    // Preverimo, ali datoteka obstaja
-    if (!fs.existsSync('/snap/bin/chromium')) {
-        throw new Error('Chromium ni nameščen. Zaženite: snap install chromium');
+    // Možne poti do Chromium/Chrome
+    const possiblePaths = [
+        '/snap/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium',
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable'
+    ];
+    
+    let executablePath = null;
+    
+    // Poiščimo delujočo pot
+    for (const path of possiblePaths) {
+        if (fs.existsSync(path)) {
+            console.log(`Najden brskalnik na: ${path}`);
+            executablePath = path;
+            break;
+        }
     }
     
+    if (!executablePath) {
+        throw new Error('Ni mogoče najti nameščenega brskalnika. Namestite Chromium z: snap install chromium');
+    }
+    
+    console.log(`Uporabljam brskalnik: ${executablePath}`);
+    
     const browser = await puppeteer.launch({
-        executablePath: '/snap/bin/chromium', // Določi pot do Chromium
-        headless: 'new', // ali true za starejše različice
+        executablePath: executablePath,
+        headless: 'new',
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
@@ -33,7 +49,18 @@ async function getProductCode(ime) {
             '--disable-extensions',
             '--disable-background-timer-throttling',
             '--disable-backgrounding-occluded-windows',
-            '--disable-renderer-backgrounding'
+            '--disable-renderer-backgrounding',
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--disable-default-apps',
+            '--disable-popup-blocking',
+            '--disable-translate',
+            '--disable-background-networking',
+            '--disable-sync',
+            '--metrics-recording-only',
+            '--disable-default-browser-check',
+            '--no-pings',
+            '--single-process' // Pomembno za snap Chromium
         ]
     });
 
