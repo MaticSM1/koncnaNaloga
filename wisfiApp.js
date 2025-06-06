@@ -18,8 +18,9 @@ const client = new MongoClient(uri, {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
-         tls: true,
     }
+    , useNewUrlParser: true,
+    useUnifiedTopology: true
 });
 
 async function run() {
@@ -121,10 +122,10 @@ app.get(`${proxy}/getItems`, async (req, res) => {
         res.send("ok")
         jager.getProductCode(name)
 
-    } catch (err) {}
-}) 
+    } catch (err) { }
+})
 
- 
+
 
 
 app.listen(port, () => {
@@ -164,24 +165,24 @@ mqttServer.on('published', (packet, client) => {
         });
     }
 
-        if (packet.topic === 'images2') {
-    const fs = require('fs');
-    const path = require('path');
-    const dataDir = path.join(__dirname, 'sites', 'public', 'data');
-    const filePath = path.join(dataDir, 'test2.jpg');
+    if (packet.topic === 'images2') {
+        const fs = require('fs');
+        const path = require('path');
+        const dataDir = path.join(__dirname, 'sites', 'public', 'data');
+        const filePath = path.join(dataDir, 'test2.jpg');
 
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
-
-    fs.writeFile(filePath, packet.payload, (err) => {
-        if (err) {
-            console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
-        } else {
-            console.log('✅ Slika uspešno shranjena v test2.jpg');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
         }
-    });
-}
+
+        fs.writeFile(filePath, packet.payload, (err) => {
+            if (err) {
+                console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
+            } else {
+                console.log('✅ Slika uspešno shranjena v test2.jpg');
+            }
+        });
+    }
 
 });
 
