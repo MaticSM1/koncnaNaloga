@@ -2,6 +2,8 @@ const express = require('express');
 const mosca = require('mosca');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const jager = require('./jager');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -107,6 +109,23 @@ app.post(`${proxy}/login`, async (req, res) => {
     }
 });
 
+// items
+// Include jager.js
+app.get(`${proxy}/getItems`, async (req, res) => {
+    const { name } = req.query;
+    if (!name) {
+        return res.status(400).json({ message: 'Manjka parameter name' });
+    }
+    try {
+        res.send("ok")
+        jager.getProductCode(name)
+
+    } catch (err) {}
+}) 
+
+ 
+
+
 app.listen(port, () => {
     console.log(`HTTP port http://localhost:${port}`);
 });
@@ -129,6 +148,35 @@ mqttServer.on('clientConnected', (client) => {
 
 mqttServer.on('published', (packet, client) => {
     console.log('Objavljeno:', packet.topic, packet.payload.toString());
+    if (packet.topic === 'images') {
+        const dataDir = __dirname + '/sites/public/data';
+        const filePath = dataDir + '/test.txt';
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        fs.appendFile(filePath, packet.payload.toString() + '\n', (err) => {
+            if (err) {
+                console.error('Napaka pri shranjevanju v test.txt:', err);
+            } else {
+                console.log('Vnos shranjen v test.txt');
+            }
+        });
+    }
+
+        if (packet.topic === 'images2') {
+        const dataDir = __dirname + '/sites/public/data';
+        const filePath = dataDir + '/test2.txt';
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        fs.writeFile(filePath, packet.payload.toString() + '\n', (err) => {
+            if (err) {
+            console.error('Napaka pri shranjevanju v test2.txt:', err);
+            } else {
+            console.log('Vnos shranjen v test2.txt (prepisano)');
+            }
+        });
+    }
 });
 
 

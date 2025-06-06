@@ -6,7 +6,7 @@ if (typeof __dirname === 'undefined') {
     global.__dirname = path.resolve();
 }
 
-async function getProductCode() {
+async function getProductCode(ime) {
     console.log('Zaganjam brskalnik...');
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
@@ -14,7 +14,7 @@ async function getProductCode() {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36');
 
     console.log('Odpiram iskalno stran za "mleko"...');
-    await page.goto('https://www.trgovinejager.com/iskalnik/?isci=mleko', { waitUntil: 'networkidle2' });
+    await page.goto(`https://www.trgovinejager.com/iskalnik/?isci=${ime}`, { waitUntil: 'networkidle2' });
 
     try {
         console.log('Preverjam, ali je prikazano obvestilo o piškotkih...');
@@ -67,6 +67,6 @@ async function getProductCode() {
 
 
 }
-getProductCode()
-
+//getProductCode("mleko")
+// 
 module.exports = { getProductCode };
