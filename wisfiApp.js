@@ -1,9 +1,11 @@
 const express = require('express');
-const mosca = require('mosca');
+const aedes = require('aedes')({ decodePayload: false });
+const net = require('net');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jager');
 const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -12,14 +14,11 @@ let proxy = process.env.PROXY || "";
 
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
-
-console.log('MongoDB URI:', uri);
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
-         tls: true,
     }
 });
 
@@ -27,9 +26,9 @@ async function run() {
     try {
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("MongoDB connected!");
+        console.log("✅ MongoDB connected!");
     } catch (err) {
-        console.error("MongoDB connection error:", err);
+        console.error("❌ MongoDB connection error:", err);
     }
 }
 run().catch(console.dir);
@@ -44,10 +43,9 @@ app.use(session({
 }));
 app.use(`${proxy}/public`, express.static(__dirname + '/sites/public'));
 
-
+// Routes
 app.get('/', (req, res) => {
-    console.log(req.session);
-    if (req.session && req.session.email) {
+    if (req.session?.email) {
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
     } else {
@@ -56,34 +54,27 @@ app.get('/', (req, res) => {
     }
 });
 
-// Ping test
 app.get(`${proxy}/ping`, (req, res) => {
     console.log('Ping');
     res.send('Pong!');
 });
 
-// Logout
 app.get(`${proxy}/logout`, (req, res) => {
     req.session.destroy(err => {
-        if (err) {
-            return res.status(500).send('Napaka pri odjavi');
-        }
+        if (err) return res.status(500).send('Napaka pri odjavi');
         res.redirect('/');
     });
 });
 
-// Register
 app.post(`${proxy}/register`, async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email in geslo sta obvezna' });
-    }
+    if (!email || !password) return res.status(400).json({ message: 'Email in geslo sta obvezna' });
+
     try {
         const db = client.db('users');
         const existingUser = await db.collection('users').findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: 'Email že obstaja' });
-        }
+        if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
+
         await db.collection('users').insertOne({ email, password });
         req.session.email = email;
         res.status(201).json({ message: 'Uporabnik uspešno registriran' });
@@ -93,7 +84,6 @@ app.post(`${proxy}/register`, async (req, res) => {
     }
 });
 
-// Login
 app.post(`${proxy}/login`, async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -111,79 +101,49 @@ app.post(`${proxy}/login`, async (req, res) => {
     }
 });
 
-// items
-// Include jager.js
 app.get(`${proxy}/getItems`, async (req, res) => {
     const { name } = req.query;
-    if (!name) {
-        return res.status(400).json({ message: 'Manjka parameter name' });
-    }
+    if (!name) return res.status(400).json({ message: 'Manjka parameter name' });
+
     try {
-        res.send("ok")
-        jager.getProductCode(name)
-
-    } catch (err) {}
-}) 
-
- 
-
+        res.send("ok");
+        jager.getProductCode(name);
+    } catch (err) {
+        res.status(500).json({ message: 'Napaka pri obdelavi', error: err.message });
+    }
+});
 
 app.listen(port, () => {
-    console.log(`HTTP port http://localhost:${port}`);
+    console.log(`🌐 HTTP strežnik na http://localhost:${port}`);
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MQTT z Aedes
+const mqttPort = 1883;
+const mqttServer = net.createServer(aedes.handle);
 
-// MQTT
-const mqttSettings = {
-    port: 1883
-};
-
-const mqttServer = new mosca.Server(mqttSettings);
-
-mqttServer.on('ready', () => {
-    console.log('MQTT port 1883');
+mqttServer.listen(mqttPort, () => {
+    console.log(`🚀 MQTT strežnik (aedes) pripravljen na portu ${mqttPort}`);
 });
 
-mqttServer.on('clientConnected', (client) => {
-    console.log('Povezan odjemalec:', client.id);
+aedes.on('client', (client) => {
+    console.log('📡 Odjemalec povezan:', client?.id || 'neznano');
 });
 
-mqttServer.on('published', (packet, client) => {
-    console.log('Objavljeno:', packet.topic, packet.payload);
-    if (packet.topic === 'images') {
-        const dataDir = __dirname + '/sites/public/data';
-        const filePath = dataDir + '/test.txt';
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        fs.appendFile(filePath, packet.payload.toString(), (err) => {
-            if (err) {
-                console.error('Napaka pri shranjevanju v test.txt:', err);
-            } else {
-                console.log('Vnos shranjen v test.txt');
-            }
+aedes.on('publish', (packet, client) => {
+    if (!packet.topic || packet.topic.startsWith('$SYS')) return;
+
+    console.log('📨 Objavljeno:', packet.topic);
+    console.log('🧪 Buffer:', Buffer.isBuffer(packet.payload));
+    console.log('🔢 Velikost:', packet.payload.length);
+
+    const dataDir = path.join(__dirname, 'sites/public/data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+
+    if (packet.topic === 'images2') {
+        fs.writeFile(path.join(dataDir, 'test2.jpg'), packet.payload, err => {
+            if (err) console.error('❌ Napaka pri test2.jpg:', err);
+            else console.log('✅ Slika uspešno shranjena kot test2.jpg');
         });
     }
-
-        if (packet.topic === 'images2') {
-    const fs = require('fs');
-    const path = require('path');
-    const dataDir = path.join(__dirname, 'sites', 'public', 'data');
-    const filePath = path.join(dataDir, 'test2.jpg');
-
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
-
-    fs.writeFile(filePath, packet.payload, (err) => {
-        if (err) {
-            console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
-        } else {
-            console.log('✅ Slika uspešno shranjena v test2.jpg');
-        }
-    });
-}
-
 });
-
-
