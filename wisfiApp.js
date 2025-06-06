@@ -13,32 +13,15 @@ let proxy = process.env.PROXY || "";
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
 
+console.log('MongoDB URI:', uri);
 const client = new MongoClient(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
-
-let mongoON = false;
-let mongoNeDela = false;
-let cooldown = 10000; // 10s default
-const nastavitveZazeniBrezMongo = false;
-
-setInterval(async () => {
-    if (!mongoON && !nastavitveZazeniBrezMongo) {
-        try {
-            await client.connect();
-            await client.db("admin").command({ ping: 1 });
-            if (!mongoNeDela) console.log('[START] connected to MongoDB');
-            mongoON = true;
-            cooldown = 23 * 60 * 60 * 1000; // 23h
-        } catch (err) {
-            mongoNeDela = true;
-            console.log('[START] Povezovanje na MongoDB neuspesno');
-            cooldown = 3 * 60 * 1000; // 3min
-            console.log('[START] Popravljam MongoDB');
-        }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+         tls: true,
     }
-}, cooldown);
+});
 
 async function run() {
     try {
@@ -139,10 +122,10 @@ app.get(`${proxy}/getItems`, async (req, res) => {
         res.send("ok")
         jager.getProductCode(name)
 
-    } catch (err) { }
-})
+    } catch (err) {}
+}) 
 
-
+ 
 
 
 app.listen(port, () => {
@@ -182,24 +165,24 @@ mqttServer.on('published', (packet, client) => {
         });
     }
 
-    if (packet.topic === 'images2') {
-        const fs = require('fs');
-        const path = require('path');
-        const dataDir = path.join(__dirname, 'sites', 'public', 'data');
-        const filePath = path.join(dataDir, 'test2.jpg');
+        if (packet.topic === 'images2') {
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(__dirname, 'sites', 'public', 'data');
+    const filePath = path.join(dataDir, 'test2.jpg');
 
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-
-        fs.writeFile(filePath, packet.payload, (err) => {
-            if (err) {
-                console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
-            } else {
-                console.log('✅ Slika uspešno shranjena v test2.jpg');
-            }
-        });
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
     }
+
+    fs.writeFile(filePath, packet.payload, (err) => {
+        if (err) {
+            console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
+        } else {
+            console.log('✅ Slika uspešno shranjena v test2.jpg');
+        }
+    });
+}
 
 });
 
