@@ -2,94 +2,95 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-// Uporabi __dirname, če ni na voljo
-if (typeof __dirname === 'undefined') {
-  global.__dirname = path.resolve();
-}
-
-// Pot do sistemskega Chromiuma (popravi po potrebi!)
-const CHROME_PATH = '/snap/bin/chromium'; // ali '/usr/bin/chromium-browser' ali '/usr/bin/chromium'
+// Določi pot do sistemskega Chromiuma (najdi pravo s 'which chromium')
+const CHROME_PATH = process.env.CHROME_PATH || '/usr/bin/chromium-browser'; // Prilagodi po potrebi
 
 async function getProductCode(ime) {
   console.log('🔍 Začenjam iskanje izdelka:', ime);
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    executablePath: CHROME_PATH,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-
-  const page = await browser.newPage();
-
-  await page.setUserAgent(
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-  );
-
-  // Pojdi na stran z rezultati iskanja
-  await page.goto(`https://www.trgovinejager.com/iskalnik/?isci=${ime}`, {
-    waitUntil: 'networkidle2',
-  });
-
-  // Sprejmi piškotke, če obstajajo
-  try {
-    await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
-    await page.click('.bcms-cookies-btn--accept');
-    await page.waitForTimeout(1000);
-  } catch (e) {
-    console.log('ℹ️ Piškotni banner ni bil prikazan.');
-  }
-
-  // Čakaj na rezultate
-  await page.waitForSelector('.item-box', { timeout: 10000 });
-
-  // Najdi prvi izdelek
-  const itemBox = await page.$('.item-box a');
-
-  if (!itemBox) {
-    console.log('❌ Ni bilo mogoče najti izdelka.');
-    await browser.close();
+  // Preveri, ali Chromium obstaja
+  if (!fs.existsSync(CHROME_PATH)) {
+    console.error(`❌ Chromium ni najden na poti: ${CHROME_PATH}`);
     return null;
   }
 
-  const productUrl = await page.evaluate(a => a.href, itemBox);
-  console.log('✅ Povezava do izdelka:', productUrl);
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: CHROME_PATH,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
-  // Odpri stran izdelka
-  await page.goto(productUrl, { waitUntil: 'networkidle2' });
+    const page = await browser.newPage();
 
-  // Počakaj na podatke izdelka
-  await page.waitForSelector('.prod-number', { timeout: 10000 });
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+    );
 
-  let productCode = await page.$eval('.prod-number', el => el.textContent.trim());
-  let price = await page.$eval('.price', el => el.textContent.trim());
-  const imageSrc = await page.$eval('.slider-image img', img => img.src);
-  const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
+    await page.goto(`https://www.trgovinejager.com/iskalnik/?isci=${ime}`, {
+      waitUntil: 'networkidle2',
+    });
 
-  // Očisti podatke
-  productCode = productCode.replace(/\s+/g, '').trim();
-  price = price.replace(/\s+/g, '').replace(/\n/g, '').replace(/[^\d,\.]/g, '');
+    // Sprejmi piškotke, če obstajajo
+    try {
+      await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
+      await page.click('.bcms-cookies-btn--accept');
+      await page.waitForTimeout(1000);
+    } catch (e) {
+      console.log('ℹ️ Piškotni banner ni bil prikazan.');
+    }
 
-  await browser.close();
+    // Čakaj na rezultate
+    await page.waitForSelector('.item-box', { timeout: 10000 });
+    const itemBox = await page.$('.item-box a');
 
-  // Shrani podatke
-  const outputDir = path.join(__dirname, '/sites/public/data');
-  const outputPath = path.join(outputDir, `${productCode.split(':')[1]}.json`);
+    if (!itemBox) {
+      console.log('❌ Ni bilo mogoče najti izdelka.');
+      return null;
+    }
 
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
+    const productUrl = await page.evaluate(a => a.href, itemBox);
+    console.log('✅ Povezava do izdelka:', productUrl);
+
+    await page.goto(productUrl, { waitUntil: 'networkidle2' });
+
+    await page.waitForSelector('.prod-number', { timeout: 10000 });
+
+    let productCode = await page.$eval('.prod-number', el => el.textContent.trim());
+    let price = await page.$eval('.price', el => el.textContent.trim());
+    const imageSrc = await page.$eval('.slider-image img', img => img.src);
+    const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
+
+    productCode = productCode.replace(/\s+/g, '').trim();
+    price = price.replace(/\s+/g, '').replace(/\n/g, '').replace(/[^\d,\.]/g, '');
+
+    const outputDir = path.join(__dirname, '/sites/public/data');
+    const productId = productCode.split(':')[1];
+    const outputPath = path.join(outputDir, `${productId}.json`);
+
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    fs.writeFileSync(
+      outputPath,
+      JSON.stringify({ name, price, imageSrc }, null, 2),
+      'utf8'
+    );
+
+    console.log(`✅ Podatki shranjeni: ${outputPath}`);
+    return productId;
+
+  } catch (err) {
+    console.error('❌ Napaka pri getProductCode:', err);
+    return null;
+  } finally {
+    if (browser) await browser.close();
   }
-
-  fs.writeFileSync(
-    outputPath,
-    JSON.stringify({ name, price, imageSrc }, null, 2),
-    'utf8'
-  );
-
-  console.log(`✅ Podatki shranjeni: ${outputPath}`);
-  return productCode.split(':')[1];
 }
 
-// Test (odkomentiraj za lokalno testiranje)
- getProductCode('mleko');
+// Če želiš ročno testirati:
+// getProductCode('mleko');
 
 module.exports = { getProductCode };
