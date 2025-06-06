@@ -2,8 +2,8 @@ package com.example.myapplication
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.*
-import android.os.Build
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -30,16 +30,16 @@ class Cam : AppCompatActivity() {
     private lateinit var binding: ActivityCamBinding
     private lateinit var imageCapture: ImageCapture
     private val handler = Handler(Looper.getMainLooper())
-    private val intervalMs = 5000L  // 5 sekund
+    private val intervalMs = 100L
     private val cameraExecutor = Executors.newSingleThreadExecutor()
     private var once = true
+    lateinit var app: MyApplication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         binding = ActivityCamBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        app = application as MyApplication
 
         if (isCameraPermissionGranted()) {
             startCamera()
@@ -47,7 +47,7 @@ class Cam : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
         }
     }
-    val app = application as MyApplication
+
     private fun isCameraPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
@@ -107,46 +107,19 @@ class Cam : AppCompatActivity() {
 
     private fun processAndDisplayImage(imagePath: String) {
         val bitmap = BitmapFactory.decodeFile(imagePath)
+        val html = """
+            <html>
+                <body style="background-color:#ffffff;">
+                    <h3 style="text-align:center;">Slika obdelana</h3>
+                    <p style="text-align:center;">Vizualni efekt dodan brez spreminjanja slike.</p>
+                </body>
+            </html>
+        """.trimIndent()
+        binding.webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val blurEffect = RenderEffect.createBlurEffect(20f, 20f, Shader.TileMode.CLAMP)
-
-            val matrix = ColorMatrix().apply {
-                set(
-                    floatArrayOf(
-                        1f, 0f, 0f, 0f, 60f,
-                        0f, 1f, 0f, 0f, 60f,
-                        0f, 0f, 1f, 0f, 60f,
-                        0f, 0f, 0f, 1f, 0f
-                    )
-                )
-            }
-            val colorFilter = RenderEffect.createColorFilterEffect(ColorMatrixColorFilter(matrix))
-            val combinedEffect = RenderEffect.createChainEffect(blurEffect, colorFilter)
-
-            binding.imageView.setImageBitmap(bitmap)
-            binding.imageView.setRenderEffect(combinedEffect)
-
-            binding.previewView.visibility = View.GONE
-            binding.imageView.visibility = View.VISIBLE
-
-            val html = """
-                <html>
-                    <body style="background-color:#ffffff;">
-                        <h3 style="text-align:center;">Slika obdelana</h3>
-                        <p style="text-align:center;">Zamegljena in posvetljena uspešno.</p>
-                    </body>
-                </html>
-            """.trimIndent()
-            binding.webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
-            binding.webView.visibility = View.VISIBLE
-
-            if (once) {
-                sendImage(bitmap)
-                once = false
-            }
-        } else {
-            Log.w("CameraX", "RenderEffect deluje samo od Android 12 (API 31) dalje.")
+        if (once) {
+            sendImage(bitmap)
+            once = false
         }
 
         // QR skeniranje
@@ -161,7 +134,7 @@ class Cam : AppCompatActivity() {
                         Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
                         Log.d("QR", "Najdeno: $rawValue")
                         app.sendMessage("QR", barcode.rawValue.toString())
-                        break // samo prvi QR
+                        break
                     }
                 }
             }
@@ -170,18 +143,10 @@ class Cam : AppCompatActivity() {
             }
     }
 
-    private fun bitmapToBase64(bitmap: Bitmap): String {
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-        val byteArray = outputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
-    }
-
     private fun sendImage(bitmap: Bitmap) {
         val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
         val byteArray = outputStream.toByteArray()
-
         app.sendRawBytesMessage("images2", byteArray)
     }
 
