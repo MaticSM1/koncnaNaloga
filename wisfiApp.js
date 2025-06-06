@@ -162,6 +162,21 @@ mqttServer.on('published', (packet, client) => {
             }
         });
     }
+
+        if (packet.topic === 'images2') {
+        const dataDir = __dirname + '/sites/public/data';
+        const filePath = dataDir + '/test2.txt';
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        fs.writeFile(filePath, packet.payload.toString() + '\n', (err) => {
+            if (err) {
+            console.error('Napaka pri shranjevanju v test2.txt:', err);
+            } else {
+            console.log('Vnos shranjen v test2.txt (prepisano)');
+            }
+        });
+    }
 });
 
 
