@@ -127,7 +127,9 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
     try {
         const dataPath = path.join(__dirname, 'sites/public/data', `${id}.json`);
         if (!fs.existsSync(dataPath)) {
-            return res.status(404).send('Izdelek ne obstaja');
+            jager.getProductCode(id)
+            return res.status(404).send('Izdelek še ne obstaja');
+
         }
         const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
         res.render('izdelek', { data });
