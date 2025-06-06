@@ -38,6 +38,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    packaging {
+        resources {
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
 }
 
 dependencies {
@@ -52,6 +58,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    implementation(libs.hivemq.mqtt.client)
+    implementation(libs.org.eclipse.paho.android.service)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
