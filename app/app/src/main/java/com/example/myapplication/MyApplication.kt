@@ -64,9 +64,10 @@ class MyApplication : Application() {
                 .payload(data) // NE toString, NE Base64
                 .send()
 
-            Log.i("MQTT", "Sporočilo poslano na '$topic'")
+            Toast.makeText(this, "Sporočilo poslano na '$topic'", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("MQTT", "Napaka pri pošiljanju: ${e.message}")
+            Toast.makeText(this, "Napaka pri pošiljanju: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 

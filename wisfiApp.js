@@ -164,19 +164,24 @@ mqttServer.on('published', (packet, client) => {
     }
 
         if (packet.topic === 'images2') {
-        const dataDir = __dirname + '/sites/public/data';
-        const filePath = dataDir + '/test2.jpg';
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        fs.writeFile(filePath, packet.payload, (err) => {
-            if (err) {
-            console.error('Napaka pri shranjevanju v test2.txt:', err);
-            } else {
-            console.log('Vnos shranjen v test2.txt (prepisano)');
-            }
-        });
+    const fs = require('fs');
+    const path = require('path');
+    const dataDir = path.join(__dirname, 'sites', 'public', 'data');
+    const filePath = path.join(dataDir, 'test2.jpg');
+
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
     }
+
+    fs.writeFile(filePath, packet.payload, (err) => {
+        if (err) {
+            console.error('❌ Napaka pri shranjevanju v test2.jpg:', err);
+        } else {
+            console.log('✅ Slika uspešno shranjena v test2.jpg');
+        }
+    });
+}
+
 });
 
 
