@@ -5,7 +5,344 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kaj je v hrani</title>
-    <link rel="stylesheet" href="/public/main.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        /* Search Section */
+        .search-section {
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            text-align: center;
+        }
+
+        .search-title {
+            font-size: 2.5rem;
+            color: #2E7D32;
+            margin-bottom: 1rem;
+        }
+
+        .search-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 60px 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .search-button:hover {
+            background-color: #3e8e41;
+        }
+
+        /* Recent Searches Carousel */
+        .recent-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #2E7D32;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 60px;
+        }
+
+        .carousel-wrapper {
+            overflow: hidden;
+            border-radius: 15px;
+        }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease;
+            gap: 1rem;
+            padding: 0 10px;
+        }
+
+        .product-card {
+            flex: 0 0 calc(33.333% - 1rem);
+            min-width: 280px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-brand {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .product-ingredients {
+            background-color: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #555;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #4CAF50;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .carousel-nav:hover {
+            background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .carousel-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .carousel-nav.prev {
+            left: 10px;
+        }
+
+        .carousel-nav.next {
+            right: 10px;
+        }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: #4CAF50;
+        }
+
+        /* Suggestions */
+        .suggestions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .suggestion-tag {
+            background-color: white;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-tag:hover {
+            background-color: #4CAF50;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .search-title {
+                font-size: 2rem;
+            }
+
+            .product-card {
+                flex: 0 0 calc(100% - 2rem);
+                min-width: 280px;
+            }
+
+            .carousel-container {
+                padding: 0 20px;
+            }
+
+            .carousel-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .carousel-nav.prev {
+                left: 5px;
+            }
+
+            .carousel-nav.next {
+                right: 5px;
+            }
+
+            main {
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -17,27 +354,198 @@
                     <span>Kaj je v hrani</span>
                 </div>
                 <div class="nav-links">
-                    <a href="/public/kontakt.html">Kontakt</a>
-                    <a href="/public/kontakt.html">Api</a>
-                    <a href="/public/kontakt.html">Nastavitve</a>
-
-
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
+                    <a href="/wisfi/public/kontakt.html">Api</a>
+                    <a href="/wisfi/public/kontakt.html">Nastavitve</a>
                 </div>
             </nav>
         </header>
 
         <main>
+            <section class="search-section">
+                <h1 class="search-title">Poiščite sestavine</h1>
+                <p class="search-subtitle">Odkrijte, kaj je v vaših priljubljenih živilih</p>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Vnesite ime izdelka (npr. Nutella, Coca Cola...)" id="searchInput">
+                    <button class="search-button" onclick="searchProduct()">🔍</button>
+                </div>
 
-            // en lep iskalnik izdelokov
-            // naredi iskalnik za izdelek
-            // naredi rolo desno levo z izdelki toraj karticami kjer so prikazanis izdelki ki si jih nazadnje iskal
+            </section>
 
+            <section class="recent-section">
+                <h2 class="section-title">Nedavno iskani izdelki</h2>
+                
+                <div class="carousel-container">
+                    <button class="carousel-nav prev" id="prevBtn" onclick="slideCarousel(-1)">❮</button>
+                    <button class="carousel-nav next" id="nextBtn" onclick="slideCarousel(1)">❯</button>
+                    
+                    <div class="carousel-wrapper">
+                        <div class="carousel" id="carousel">
+                            <div class="product-card" onclick="viewProduct('Nutella')">
+                                <div class="product-image">🍫</div>
+                                <div class="product-info">
+                                    <div class="product-name">Nutella</div>
+                                    <div class="product-brand">Ferrero</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: sladkor, palmovo olje, lešniki, kakav v prahu, posneto mleko v prahu
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-card" onclick="viewProduct('Coca Cola')">
+                                <div class="product-image">🥤</div>
+                                <div class="product-info">
+                                    <div class="product-name">Coca Cola</div>
+                                    <div class="product-brand">The Coca-Cola Company</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: gazirana voda, sladkor, barvilo karamel, kislina, naravne arome, kofein
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-card" onclick="viewProduct('Milka čokolada')">
+                                <div class="product-image">🍫</div>
+                                <div class="product-info">
+                                    <div class="product-name">Milka čokolada</div>
+                                    <div class="product-brand">Mondelez</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: sladkor, kakavovo maslo, mleko v prahu, kakavova masa, laktoza
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-card" onclick="viewProduct('Activia jogurt')">
+                                <div class="product-image">🥛</div>
+                                <div class="product-info">
+                                    <div class="product-name">Activia jogurt</div>
+                                    <div class="product-brand">Danone</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: mleko, sladkor, jogurtove kulture, naravne arome, sadni pripravek
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-card" onclick="viewProduct('Pringles')">
+                                <div class="product-image">🥔</div>
+                                <div class="product-info">
+                                    <div class="product-name">Pringles Original</div>
+                                    <div class="product-brand">Kellogg's</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: krompirjeva moka, rastlinska olja, pšenična moka, sol, emulgatorji
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-card" onclick="viewProduct('Red Bull')">
+                                <div class="product-image">⚡</div>
+                                <div class="product-info">
+                                    <div class="product-name">Red Bull</div>
+                                    <div class="product-brand">Red Bull GmbH</div>
+                                    <div class="product-ingredients">
+                                        Glavne sestavine: voda, saharoza, glukoza, kislina, taurin, kofein, vitamini B
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="carousel-dots">
+                        <span class="dot active" onclick="goToSlide(0)"></span>
+                        <span class="dot" onclick="goToSlide(1)"></span>
+                        <span class="dot" onclick="goToSlide(2)"></span>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer>
             <p>&copy; 2025 Kaj je v hrani. Vse pravice pridržane.</p>
         </footer>
     </div>
+
+    <script>
+        let currentSlide = 0;
+        const carousel = document.getElementById('carousel');
+        const dots = document.querySelectorAll('.dot');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        let cardsPerView = window.innerWidth <= 768 ? 1 : 3;
+        const totalCards = 6;
+        let maxSlides = Math.max(0, totalCards - cardsPerView);
+
+        function updateCarousel() {
+            const cardWidth = carousel.children[0].offsetWidth + 16; // card width + gap
+            const translateX = -(currentSlide * cardWidth);
+            carousel.style.transform = `translateX(${translateX}px)`;
+            
+            // Update dots
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === Math.floor(currentSlide / cardsPerView));
+            });
+            
+            // Update button states
+            prevBtn.disabled = currentSlide <= 0;
+            nextBtn.disabled = currentSlide >= maxSlides;
+        }
+
+        function slideCarousel(direction) {
+            const newSlide = currentSlide + direction;
+            
+            if (newSlide < 0) {
+                currentSlide = 0;
+            } else if (newSlide > maxSlides) {
+                currentSlide = maxSlides;
+            } else {
+                currentSlide = newSlide;
+            }
+            
+            updateCarousel();
+        }
+
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex * cardsPerView;
+            if (currentSlide > maxSlides) {
+                currentSlide = maxSlides;
+            }
+            updateCarousel();
+        }
+
+        function searchProduct() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (searchTerm.trim()) {
+                alert(`Iskanje izdelka: ${searchTerm}`);
+                // Here you would typically make an API call to search for the product
+            }
+        }
+
+        function searchSuggestion(term) {
+            document.getElementById('searchInput').value = term;
+            searchProduct();
+        }
+
+        function viewProduct(productName) {
+            alert(`Prikaz podrobnosti za: ${productName}`);
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProduct();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            cardsPerView = window.innerWidth <= 768 ? 1 : 3;
+            maxSlides = Math.max(0, totalCards - cardsPerView);
+            currentSlide = Math.min(currentSlide, maxSlides);
+            updateCarousel();
+        });
+
+        setTimeout(() => {
+            updateCarousel();
+        }, 100);
+    </script>
 </body>
 
 </html>

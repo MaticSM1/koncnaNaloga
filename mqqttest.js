@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 
-// Nastavi povezavo na tvoj MQTT strežnik
-const brokerUrl = 'mqtt://localhost:1883'; // Spremeni po potrebi
+
+const brokerUrl = 'mqtt://193.95.229.123:1883'; 
 const topic = 'test/topic';
 
 const client = mqtt.connect(brokerUrl);
@@ -11,7 +11,7 @@ client.on('connect', () => {
     client.subscribe(topic, (err) => {
         if (!err) {
             console.log(`Naročen na temo: ${topic}`);
-            // Pošlji testno sporočilo
+            // testno sporočilo
             client.publish(topic, 'Pozdrav z MQTT testa!');
         }
     });
@@ -22,6 +22,7 @@ client.on('message', (topic, message) => {
     client.end();
 });
 
+   
 client.on('error', (err) => {
     console.error('Napaka:', err);
     client.end();

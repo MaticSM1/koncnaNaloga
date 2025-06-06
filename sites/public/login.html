@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prijava - Kaj je v hrani</title>
-    <link rel="stylesheet" href="/public/main.css">
+    <link rel="stylesheet" href="/wisfi/public/main.css">
 
 </head>
 
@@ -19,7 +19,7 @@
                 </a>
                 <div class="nav-links">
                     <a href="/">Domov</a>
-                    <a href="/public/kontakt.html">Kontakt</a>
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
                 </div>
             </nav>
         </header>
@@ -89,7 +89,7 @@
 
             // Simulacija prijave
             if (email && password) {
-                fetch('/login', {
+                fetch('/wisfi/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -98,7 +98,7 @@
                 })
                     .then(response => {
                         if (response.ok) {
-                            window.location.href = '/';
+                            window.location.href = '/wisfi/';
                         } else {
                             return response.json().then(data => {
                                 alert(data.message || 'Prijava ni uspela.');
