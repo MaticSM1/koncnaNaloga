@@ -1,116 +1,53 @@
 package com.example.myapplication
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import com.example.myapplication.databinding.ActivityLoginBinding
 
 class Login : AppCompatActivity() {
-
-    private lateinit var previewView: PreviewView
-    private lateinit var imageView: ImageView
-    private lateinit var imageCapture: ImageCapture
-    private lateinit var cameraExecutor: ExecutorService
-    private val handler = Handler(Looper.getMainLooper())
-    private val interval: Long = 5000 // 5 sekund
+    private lateinit var binding: ActivityLoginBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
 
-        previewView = findViewById(R.id.previewView)
-        imageView = findViewById(R.id.image_view)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.CAMERA), 1
-            )
+        binding.signOrLog.setOnClickListener {
+            binding.signOrLog.text = if (binding.signOrLog.text == "Already a member? Log in")
+                "Not a member yet? Register"
+            else
+                "Already a member? Log in"
+
+            binding.loginButton.text = if (binding.loginButton.text == "Log in")
+                "Sign in"
+            else
+                "Log in"
         }
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
-    }
+        binding.loginButton.setOnClickListener {
+            val email = binding.emailEditText.text.toString()
+            val password = binding.passwordEditText.text.toString()
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
-
-    private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // <- Ustavi naprej
             }
 
-            imageCapture = ImageCapture.Builder().build()
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
-                startRepeatingCapture()
-            } catch (e: Exception) {
-                Log.e("CameraX", "Error starting camera", e)
-            }
-        }, ContextCompat.getMainExecutor(this))
+            if (binding.loginButton.text == "Log in")
+                signInUser(email, password)
+            else
+                createUser(email, password)
+        }
     }
 
-    private fun startRepeatingCapture() {
-        handler.post(object : Runnable {
-            override fun run() {
-                takePhoto()
-                handler.postDelayed(this, interval)
-            }
-        })
+    private fun signInUser(email: String, password: String) {
+        Toast.makeText(this, "Logging in user: $email", Toast.LENGTH_SHORT).show()
     }
 
-    private fun takePhoto() {
-        val photoFile = File(
-            externalCacheDir,
-            "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())}.jpg"
-        )
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                    imageView.setImageBitmap(bitmap)
-                }
-
-                override fun onError(exception: ImageCaptureException) {
-                    Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
-                }
-            }
-        )
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-        handler.removeCallbacksAndMessages(null)
+    private fun createUser(email: String, password: String) {
+        Toast.makeText(this, "Creating user: $email", Toast.LENGTH_SHORT).show()
     }
 }

@@ -1,72 +1,59 @@
 package com.example.myapplication
+
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.databinding.ActivitySettingsBinding
 import com.hivemq.client.mqtt.MqttClient
-import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.hivemq.client.mqtt.datatypes.MqttQos
+import java.nio.charset.StandardCharsets
 
 class Settings : AppCompatActivity() {
 
-    private lateinit var client: Mqtt3AsyncClient
+    private lateinit var binding: ActivitySettingsBinding
+
+    private val TAG = "SettingsMQTT"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val mqttButton = findViewById<Button>(R.id.mqtt)
-        mqttButton.setOnClickListener {
-            connectToMqttBroker()
+        binding.ping.setOnClickListener {
+            connectAndPing()
         }
     }
 
-    private fun connectToMqttBroker() {
-        client = MqttClient.builder()
+    private fun connectAndPing() {
+        val client = MqttClient.builder()
             .useMqttVersion3()
-            .serverHost("broker.hivemq.com")
+            .serverHost("193.95.229.123")
             .serverPort(1883)
-            .buildAsync()
+            .identifier("android-client-${System.currentTimeMillis()}")
+            .buildBlocking()
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                client.connect().get()
 
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@Settings, "Povezava uspešna", Toast.LENGTH_SHORT).show()
-                }
+        try {
+            Log.d(TAG, "Poskušam se povezati na MQTT broker...")
+            client.connect()
 
-                client.subscribeWith()
-                    .topicFilter("test/topic")
-                    .callback { publish ->
-                        val payloadOpt = publish.payload
-                        val msg = if (payloadOpt.isPresent) {
-                            val buffer = payloadOpt.get()
-                            val bytes = ByteArray(buffer.remaining())
-                            buffer.get(bytes)
-                            String(bytes, Charsets.UTF_8)
-                        } else {
-                            "Ni podatka"
-                        }
-                        // Ker smo že v korutini, z uporabo lifecycleScope, lahko Toast kličemo na UI niti
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            Toast.makeText(this@Settings, "Prejeto: $msg", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    .send()
-                    .get()
+            Log.d(TAG, "Povezava uspešna.")
+            Log.d(TAG, "Pošiljam sporočilo 'ping' na test/ping...")
+            client.publishWith()
+                .topic("test/ping")
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .payload("ping".toByteArray(StandardCharsets.UTF_8))
+                .send()
+            Log.d(TAG, "Sporočilo poslano.")
 
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@Settings, "Napaka: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
+            Toast.makeText(this, "Ping objavljen (HiveMQ)", Toast.LENGTH_SHORT).show()
+
+            client.disconnect()
+            Log.d(TAG, "Odklopljen od MQTT brokerja.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Napaka pri povezavi ali pošiljanju: ${e.message}", e)
+            Toast.makeText(this, "Napaka pri povezavi: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 }
-
-
