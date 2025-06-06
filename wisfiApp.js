@@ -3,10 +3,11 @@ const aedes = require('aedes')({ decodePayload: false });
 const net = require('net');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const jager = require('./jagerW');
+const jager = require('./jagerLinux');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
 
 const app = express();
