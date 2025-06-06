@@ -14,9 +14,31 @@ let proxy = process.env.PROXY || "";
 const uri = process.env.MONGO_URI;
 
 const client = new MongoClient(uri, {
-   useNewUrlParser: true,
+    useNewUrlParser: true,
     useUnifiedTopology: true
 });
+
+let mongoON = false;
+let mongoNeDela = false;
+let cooldown = 10000; // 10s default
+const nastavitveZazeniBrezMongo = false;
+
+setInterval(async () => {
+    if (!mongoON && !nastavitveZazeniBrezMongo) {
+        try {
+            await client.connect();
+            await client.db("admin").command({ ping: 1 });
+            if (!mongoNeDela) console.log('[START] connected to MongoDB');
+            mongoON = true;
+            cooldown = 23 * 60 * 60 * 1000; // 23h
+        } catch (err) {
+            mongoNeDela = true;
+            console.log('[START] Povezovanje na MongoDB neuspesno');
+            cooldown = 3 * 60 * 1000; // 3min
+            console.log('[START] Popravljam MongoDB');
+        }
+    }
+}, cooldown);
 
 async function run() {
     try {
