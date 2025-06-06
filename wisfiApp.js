@@ -106,8 +106,13 @@ app.get(`${proxy}/getItems`, async (req, res) => {
     if (!name) return res.status(400).json({ message: 'Manjka parameter name' });
 
     try {
-        res.send("ok");
-        jager.getProductCode(name);
+        try {
+            const result = await jager.getProductCode(name);
+            res.json({ result });
+        } catch (err) {
+            console.error('Napaka pri getProductCode:', err);
+            res.status(500).json({ message: 'Napaka pri iskanju kode izdelka', error: err.message });
+        }
     } catch (err) {
         res.status(500).json({ message: 'Napaka pri obdelavi', error: err.message });
     }

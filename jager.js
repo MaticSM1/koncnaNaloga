@@ -42,14 +42,16 @@ async function getProductCode(ime) {
     console.log('Čakam na prikaz šifre produkta...');
     await page.waitForSelector('.prod-number', { timeout: 10000 });
 
-    const productCode = await page.$eval('.prod-number', el => el.textContent.trim());
+    let productCode = await page.$eval('.prod-number', el => el.textContent.trim());
     let price = await page.$eval('.price', el => el.textContent.trim());
     price = price.replace(/\s+/g, '').replace(/\n/g, '').replace(/[^\d,\.]/g, '');
 
-    const imageUrl = await page.$eval('.slider-image img', img => img.src);
-    console.log('✅ Link slike:', imageUrl);
+    const imageSrc = await page.$eval('.slider-image img', img => img.src);
+    console.log(imageSrc);
 
+    const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
     console.log('✅ Šifra produkta:', productCode);
+    productCode = productCode.replace(/\s+/g, '').trim();
 
     await browser.close();
 
@@ -60,13 +62,12 @@ async function getProductCode(ime) {
         fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    fs.writeFileSync(outputPath, JSON.stringify({ price }, null, 2), 'utf8');
+    fs.writeFileSync(outputPath, JSON.stringify({ name, price,imageSrc   }, null, 2), 'utf8');
     console.log(`✅ Šifra produkta shranjena v ${outputPath}`);
 
-    return productCode;
+    return productCode.split(":")[1];
 
 
 }
-//getProductCode("mleko")
-// 
+getProductCode("mleko")
 module.exports = { getProductCode };
