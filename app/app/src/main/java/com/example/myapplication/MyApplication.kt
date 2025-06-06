@@ -20,8 +20,8 @@ class MyApplication : Application() {
     private fun initMqttClient() {
         mqttClient = MqttClient.builder()
             .useMqttVersion3()
-//            .serverHost("193.95.229.123")
-            .serverHost("10.0.2.2")
+            .serverHost("193.95.229.123")
+//            .serverHost("10.0.2.2")
             .serverPort(1883)
             .identifier("android-client-${System.currentTimeMillis()}")
             .buildBlocking()

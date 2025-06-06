@@ -10,12 +10,15 @@ import android.os.Looper
 import android.util.Base64
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapplication.databinding.ActivityCamBinding
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.common.InputImage
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
@@ -32,9 +35,11 @@ class Cam : AppCompatActivity() {
     private var once = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         binding = ActivityCamBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
 
         if (isCameraPermissionGranted()) {
             startCamera()
@@ -42,7 +47,7 @@ class Cam : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
         }
     }
-
+    val app = application as MyApplication
     private fun isCameraPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
@@ -117,7 +122,6 @@ class Cam : AppCompatActivity() {
                 )
             }
             val colorFilter = RenderEffect.createColorFilterEffect(ColorMatrixColorFilter(matrix))
-
             val combinedEffect = RenderEffect.createChainEffect(blurEffect, colorFilter)
 
             binding.imageView.setImageBitmap(bitmap)
@@ -137,16 +141,33 @@ class Cam : AppCompatActivity() {
             binding.webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
             binding.webView.visibility = View.VISIBLE
 
-            // ➕ Pošlji sliko kot base64 string
-            if(once){
+            if (once) {
                 sendImage(bitmap)
                 once = false
             }
-
-
         } else {
             Log.w("CameraX", "RenderEffect deluje samo od Android 12 (API 31) dalje.")
         }
+
+        // QR skeniranje
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val scanner = BarcodeScanning.getClient()
+
+        scanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                for (barcode in barcodes) {
+                    val rawValue = barcode.rawValue
+                    if (rawValue != null) {
+                        Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
+                        Log.d("QR", "Najdeno: $rawValue")
+                        app.sendMessage("QR", barcode.rawValue.toString())
+                        break // samo prvi QR
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e("QR", "Napaka pri branju QR kode: ${it.message}", it)
+            }
     }
 
     private fun bitmapToBase64(bitmap: Bitmap): String {
@@ -161,10 +182,8 @@ class Cam : AppCompatActivity() {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
         val byteArray = outputStream.toByteArray()
 
-        val app = application as? MyApplication
-        app?.sendRawBytesMessage("images2", byteArray)
+        app.sendRawBytesMessage("images2", byteArray)
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
