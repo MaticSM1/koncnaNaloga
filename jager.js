@@ -1,16 +1,14 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 
-// 🔧 Ročno nastavljena pot do sistemskega Chromiuma (ne Snap!)
-const CHROME_PATH = '/usr/bin/chromium-browser';
+const CHROME_PATH = '/usr/bin/chromium-browser'; // preverjeno delujoč
 
 async function getProductCode(ime) {
   console.log('🔍 Začenjam iskanje izdelka:', ime);
 
-  // ✅ Preveri, ali Chromium obstaja
   if (!fs.existsSync(CHROME_PATH)) {
-    console.error(`❌ Chromium ni najden na poti: ${CHROME_PATH}`);
+    console.error(`❌ Chromium ni najden: ${CHROME_PATH}`);
     return null;
   }
 
@@ -24,8 +22,8 @@ async function getProductCode(ime) {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--disable-gpu',
         '--disable-dev-shm-usage',
+        '--disable-gpu',
       ],
     });
 
@@ -39,16 +37,14 @@ async function getProductCode(ime) {
       waitUntil: 'networkidle2',
     });
 
-    // Sprejmi piškotke, če obstajajo
     try {
       await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
       await page.click('.bcms-cookies-btn--accept');
       await page.waitForTimeout(1000);
-    } catch (e) {
+    } catch {
       console.log('ℹ️ Piškotni banner ni bil prikazan.');
     }
 
-    // Čakaj na rezultate
     await page.waitForSelector('.item-box', { timeout: 10000 });
     const itemBox = await page.$('.item-box a');
 
@@ -69,11 +65,9 @@ async function getProductCode(ime) {
     const imageSrc = await page.$eval('.slider-image img', img => img.src);
     const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
 
-    // Očisti podatke
     productCode = productCode.replace(/\s+/g, '').trim();
     price = price.replace(/\s+/g, '').replace(/\n/g, '').replace(/[^\d,\.]/g, '');
 
-    // 🔧 Shrani podatke v lokalno datoteko
     const outputDir = path.join(__dirname, '/sites/public/data');
     const productId = productCode.split(':')[1];
     const outputPath = path.join(outputDir, `${productId}.json`);
@@ -82,11 +76,7 @@ async function getProductCode(ime) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    fs.writeFileSync(
-      outputPath,
-      JSON.stringify({ name, price, imageSrc }, null, 2),
-      'utf8'
-    );
+    fs.writeFileSync(outputPath, JSON.stringify({ name, price, imageSrc }, null, 2), 'utf8');
 
     console.log(`✅ Podatki shranjeni: ${outputPath}`);
     return productId;
@@ -99,7 +89,7 @@ async function getProductCode(ime) {
   }
 }
 
-// ❗Za lokalni test odkomentiraj spodnjo vrstico:
+// Odkomentiraj za test
 // getProductCode('mleko');
 
 module.exports = { getProductCode };
