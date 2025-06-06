@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Poslji za posodobitev
         run: |
-          curl -X GET "https://z7/ping" || echo "Napaka"
+          curl -X GET "https://z7.si/posodobiWisfi" || echo "Napaka"
