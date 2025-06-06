@@ -147,14 +147,14 @@ mqttServer.on('clientConnected', (client) => {
 });
 
 mqttServer.on('published', (packet, client) => {
-    console.log('Objavljeno:', packet.topic, packet.payload.toString());
+    console.log('Objavljeno:', packet.topic, packet.payload);
     if (packet.topic === 'images') {
         const dataDir = __dirname + '/sites/public/data';
         const filePath = dataDir + '/test.txt';
         if (!fs.existsSync(dataDir)) {
             fs.mkdirSync(dataDir, { recursive: true });
         }
-        fs.appendFile(filePath, packet.payload.toString() + '\n', (err) => {
+        fs.appendFile(filePath, packet.payload.toString(), (err) => {
             if (err) {
                 console.error('Napaka pri shranjevanju v test.txt:', err);
             } else {
@@ -165,11 +165,11 @@ mqttServer.on('published', (packet, client) => {
 
         if (packet.topic === 'images2') {
         const dataDir = __dirname + '/sites/public/data';
-        const filePath = dataDir + '/test2.txt';
+        const filePath = dataDir + '/test2.jpg';
         if (!fs.existsSync(dataDir)) {
             fs.mkdirSync(dataDir, { recursive: true });
         }
-        fs.writeFile(filePath, packet.payload.toString() + '\n', (err) => {
+        fs.writeFile(filePath, packet.payload, (err) => {
             if (err) {
             console.error('Napaka pri shranjevanju v test2.txt:', err);
             } else {
