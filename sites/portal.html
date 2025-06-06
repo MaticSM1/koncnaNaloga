@@ -516,7 +516,14 @@
             const searchTerm = document.getElementById('searchInput').value;
             if (searchTerm.trim()) {
                 alert(`Iskanje izdelka: ${searchTerm}`);
-                // Here you would typically make an API call to search for the product
+                fetch(`/wisfi/getItems?name=${encodeURIComponent(searchTerm)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Rezultati iskanja:', data);
+                    })
+                    .catch(error => {
+                        console.error('Napaka pri iskanju:', error);
+                    });
             }
         }
 
