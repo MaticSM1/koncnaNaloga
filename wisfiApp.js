@@ -201,13 +201,7 @@ aedes.on('client', (client) => {
 });
 
 
-const orvInputDir = path.join(__dirname, 'sites/public/data');
-let trenutnaRegistracija = {
-    id: "",
-    timestamp: Date.now(),
-    slike: 0,
-    status: ""
-}
+
 
 aedes.on('publish', (packet, client) => {
 
@@ -339,6 +333,13 @@ aedes.on('publish', (packet, client) => {
     }
 
 
+    const orvInputDir = path.join(__dirname, 'orv/input');
+let trenutnaRegistracija = {
+    id: "",
+    timestamp: Date.now(),
+    slike: 0,
+    status: ""
+}
 
     if (packet.topic === 'imageRegister') {
 
