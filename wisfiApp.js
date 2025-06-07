@@ -428,12 +428,14 @@ aedes.on('publish', (packet, client) => {
         fs.writeFile(path.join(inputLoginDir, `test.jpg`), packet.payload, err => {
             if (err) console.error('Napaka slike za login', err);
             else console.log(`Slika za login shranjena`);
+
         });
-        // aedes.publish({
-        //     topic: clients[clientId],
-        //     payload: Buffer.from('ok'),
-        //     qos: 0,
-        //     retain: false
-        // });
+        console.log(clients[clientId]);
+        aedes.publish({
+            topic: clients[clientId],
+            payload: Buffer.from('ok'),
+            qos: 0,
+            retain: false
+        });
     }
 });
