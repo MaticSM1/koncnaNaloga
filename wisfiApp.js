@@ -50,6 +50,7 @@ app.set('view engine', 'ejs');
 
 // Routes
 app.get('/', (req, res) => {
+    console.log(req.session.email);
     if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
