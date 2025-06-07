@@ -56,6 +56,13 @@ class Settings : AppCompatActivity() {
             connectToMqqt(local)
         }
 
+        binding.back.setOnClickListener{
+            finish()
+        }
+        binding.logout.setOnClickListener{
+            app.logout()
+        }
+
 
 
     }

@@ -25,6 +25,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.authenticate.setOnClickListener {
+            val intent = Intent(this, Authenticate::class.java)
+            startActivity(intent)
+        }
         binding.loginButton.setOnClickListener {
 
             val intent = if (binding.loginButton.text == "LOG IN") {
@@ -34,6 +38,7 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(intent)
         }
+
 
     }
 }

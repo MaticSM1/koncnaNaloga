@@ -87,7 +87,9 @@ class MyApplication : Application() {
         }
     }
 
-    fun subscribe(username: String) {
+    fun subscribe() {
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val username = sharedPreferences.getString("username", "") ?: ""
         try {
             mqttClient.subscribeWith()
                 .topicFilter(username)
@@ -118,9 +120,25 @@ class MyApplication : Application() {
         }
     }
 
-    fun setUUID(){
+    fun setUUID(): String {
         val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        var uuid = sharedPreferences.getString("UUID", null)
-        sharedPreferences.edit().putString("UUID", uuid).apply()
+        val existingUUID = sharedPreferences.getString("UUID", null)
+
+        if (existingUUID != null) {
+            return existingUUID
+        } else {
+            val uuid = UUID.randomUUID().toString()
+            sharedPreferences.edit().putString("UUID", uuid).apply()
+            return uuid
+        }
     }
+
+    fun logout() {
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.clear()
+        editor.apply()
+    }
+
+
 }

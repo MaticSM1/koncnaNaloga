@@ -12,6 +12,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -23,6 +24,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
+        <activity
+            android:name=".Authenticate"
+            android:exported="false" />
         <activity
             android:name=".Login_second_step"
             android:exported="false" />
