@@ -165,12 +165,12 @@ app.get(`${proxy}/run`, (req, res) => {
 
     process.stdout.on('data', (data) => {
         res.write(data);
-        process.stdout.pipe(process.stdout); // print to server console as well
+        process.stdout.pipe(process.stdout); 
     });
 
     process.stderr.on('data', (data) => {
         res.write(`Napaka: ${data}`);
-        process.stderr.pipe(process.stderr); // print errors to server console
+        process.stderr.pipe(process.stderr); 
     });
 
     process.on('close', (code) => {
@@ -184,6 +184,35 @@ app.get(`${proxy}/run`, (req, res) => {
     });
 });
 
+
+app.get(`${proxy}/run2`, (req, res) => {
+    const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+    const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
+    const process = exec(`${pythonCmd} "${scriptPath}"`);
+
+    res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked'
+    });
+
+    process.stdout.on('data', (data) => {
+        res.write(data);
+    });
+
+    process.stderr.on('data', (data) => {
+        res.write(`Napaka: ${data}`);
+    });
+
+    process.on('close', (code) => {
+        res.write(`\nProces zaključen z izhodno kodo ${code}`);
+        res.end();
+    });
+
+    process.on('error', (err) => {
+        res.write(`Napaka pri zagonu skripte: ${err.message}`);
+        res.end();
+    });
+});
 
 
 app.get(`${proxy}/d`, (req, res) => {
