@@ -8,8 +8,6 @@
     tools:context=".Login">
 
 
-    <!-- Password EditText -->
-
     <EditText
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
@@ -38,8 +36,8 @@
     <Button
         android:id="@+id/loginButton"
         android:layout_width="300dp"
-        android:layout_height="100dp"
-        android:text="register"
+        android:layout_height="80dp"
+        android:text="Register"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,7 +56,7 @@
         android:id="@+id/textView"
         android:layout_width="405dp"
         android:layout_height="121dp"
-        android:text="login_in_to_SUPER_ROBOT"
+        android:text=""
         android:textAlignment="center"
         android:textSize="35sp"
         app:layout_constraintBottom_toTopOf="@+id/emailEditText"
@@ -78,14 +76,14 @@
         android:id="@+id/signOrLog"
         android:layout_width="298dp"
         android:layout_height="52dp"
+        android:text="Already a member? Log in"
+        android:textColor="@color/md_theme_primary"
         android:background="@color/transparent"
-        android:text="already_a_member_log_in"
-        android:textColor="@color/md_theme_onSurface"
         android:textSize="20sp"
         android:textStyle="italic"
         app:layout_constraintBottom_toTopOf="@+id/loginButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintHorizontal_bias="0.513"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
