@@ -12,9 +12,12 @@ require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
 
+
 const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "";
+
+
 
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
@@ -338,12 +341,18 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'login') {
         console.log('prijava:', packet.payload.toString());
-        const { username, password } = JSON.parse(packet.payload.toString());
+        const { username, password, UUID } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
                 const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
+                    if (UUID) {
+                        await db.collection('users').updateOne(
+                            { email: username },
+                            { $set: { phoneId: UUID } }
+                        );
+                    }
                     clients[clientId] = username
                     aedes.publish({
                         topic: username,
