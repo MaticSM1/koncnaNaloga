@@ -1,79 +1,37 @@
 package com.example.myapplication
 
-import android.Manifest
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import com.example.myapplication.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-
-    private val CAMERA_PERMISSION_CODE = 100
-    private val CAMERA_REQUEST_CODE = 101
-    private lateinit var imageView: ImageView
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
 
-        val button: Button = findViewById(R.id.button)
-        imageView = findViewById(R.id.image_view)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        button.setOnClickListener {
-            checkCameraPermission()
+        binding.loginButton.setOnClickListener {
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
         }
-    }
 
-    private fun checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_PERMISSION_CODE
-            )
-        } else {
-            openCamera()
+        binding.settingsButton.setOnClickListener {
+            val intent = Intent(this, Settings::class.java)
+            startActivity(intent)
         }
-    }
 
-    private fun openCamera() {
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera()
-            } else {
-                Toast.makeText(this, "Dovoljenje za kamero zavrnjeno", Toast.LENGTH_SHORT).show()
-            }
+        binding.camButton.setOnClickListener {
+            val intent = Intent(this, Cam::class.java)
+            startActivity(intent)
         }
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val photo = data?.extras?.get("data")
-            imageView.setImageBitmap(photo as? android.graphics.Bitmap)
+        binding.loginSecondStepButton.setOnClickListener{
+            val intent = Intent(this, Login_second_step::class.java)
+            startActivity(intent)
         }
     }
 }
