@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+global.client = client;
 
 async function run() {
     try {
@@ -74,8 +75,8 @@ app.post(`${proxy}/register`, async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'Email in geslo sta obvezna' });
 
-    try {
-        const db = client.db('users');
+     try {
+        const db = global.client.db('users');
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
 
@@ -91,7 +92,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 app.post(`${proxy}/login`, async (req, res) => {
     const { email, password } = req.body;
     try {
-        const db = client.db('users');
+         const db = global.client.db('users');
         const user = await db.collection('users').findOne({ email });
         if (user && user.password === password) {
             req.session.email = email;
@@ -229,7 +230,7 @@ aedes.on('publish', (packet, client) => {
         const { username, password, UUID } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
-                const db = client.db('users');
+                 const db = global.client.db('users');
                 const existingUser = await db.collection('users').findOne({ email: username });
                 if (existingUser) {
                     aedes.publish({
@@ -265,7 +266,7 @@ aedes.on('publish', (packet, client) => {
         const { username, password } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
-                const db = client.db('users');
+              const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
                     clients[clientId] = username
@@ -299,7 +300,7 @@ aedes.on('publish', (packet, client) => {
         const { UUID } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
-                const db = client.db('users');
+              const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
                     clients[clientId] = username
