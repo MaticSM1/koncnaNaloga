@@ -479,6 +479,38 @@
                 status.textContent = 'Neaktivno';
                 status.className = 'status-badge status-inactive';
             }
+
+
+            if (toggle.checked) {
+                fetch('/wisfi/nastavi2f', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.meessage == "ok") {
+                            status.textContent = data.status || 'Aktivno';
+                            status.className = 'status-badge status-active';
+
+                        } else {
+                            alert(data.message);
+                        }
+
+                    })
+                    .catch(() => {
+                        status.textContent = 'Napaka';
+                        status.className = 'status-badge status-inactive';
+                    });
+            } else {
+                fetch('/wisfi/izklopi2f', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        status.textContent = 'Neaktivno';
+                        status.className = 'status-badge status-inactive';
+                    })
+                    .catch(() => {
+                        status.textContent = 'Napaka';
+                        status.className = 'status-badge status-inactive';
+                    });
+            }
+
         }
 
 

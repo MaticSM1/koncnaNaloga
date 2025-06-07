@@ -10,6 +10,9 @@ const { render } = require('ejs');
 const { exec } = require('child_process');
 require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
+let avtentikacija = ""
+let avtentikacijaDate = new Date();
+
 
 
 
@@ -61,6 +64,22 @@ app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 app.get('/', (req, res) => {
     console.log(req.session.email);
     if (req.session.email) {
+        if (req.session.login2f) {
+            if (!req.session.login2fPotrditev) {
+                if (avtentikacija == req.session.email && (new Date() - avtentikacijaDate) < 60000) {
+                    req.session.login2fPotrditev = true;
+                }
+            }
+
+            if (req.session.login2fPotrditev) {
+                console.log('Prijavljen:', req.session.email);
+                res.sendFile(__dirname + '/sites/portal.html');
+            } else {
+                console.log('Prijavljen:', req.session.email);
+                res.sendFile(__dirname + '/sites/potrditev.html');
+
+            }
+        }
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
     } else {
@@ -92,6 +111,9 @@ app.post(`${proxy}/register`, async (req, res) => {
 
         await db.collection('users').insertOne({ email, password, login2f: false, phoneId: "" });
         req.session.email = email;
+        req.session.login2f = user.login2f;
+        req.session.login2fPotrditev = false
+
         res.status(201).json({ message: 'Uporabnik uspešno registriran' });
     } catch (err) {
         console.error('Napaka pri registraciji:', err);
@@ -106,6 +128,7 @@ app.post(`${proxy}/login`, async (req, res) => {
         const user = await db.collection('users').findOne({ email });
         if (user && user.password === password) {
             req.session.email = email;
+            req.session.login2f = user.login2f;
             res.status(200).json({ message: 'Prijava uspešna' });
         } else {
             res.status(401).json({ message: 'Napačni podatki za prijavo' });
@@ -241,6 +264,44 @@ app.get(`${proxy}/nastavitve`, (req, res) => {
     } else {
         console.log('Neprijavljen obiskovalec');
         res.redirect('/');
+    }
+});
+app.post(`${proxy}/nastavi2f`, async (req, res) => {
+    if (!req.session.email) {
+        return res.status(401).json({ message: 'Niste prijavljeni' });
+    }
+    try {
+        const db = global.client.db('users');
+        const user = await db.collection('users').findOne({ email: req.session.email });
+        if (!user || !user.phoneId) {
+            return res.status(400).json({ message: 'Za vklop 2FA morate najprej registrirati UUID (telefon).' });
+        }
+        await db.collection('users').updateOne(
+            { email: req.session.email },
+            { $set: { login2f: true } }
+        );
+        req.session.login2f = true;
+        res.json({ message: 'ok' });
+    } catch (err) {
+        console.error('Napaka pri vklopu 2FA:', err);
+        res.status(500).json({ message: 'Napaka strežnika', error: err.message });
+    }
+});
+app.post(`${proxy}/izklopi2f`, async (req, res) => {
+    if (!req.session.email) {
+        return res.status(401).json({ message: 'Niste prijavljeni' });
+    }
+    try {
+        const db = global.client.db('users');
+        await db.collection('users').updateOne(
+            { email: req.session.email },
+            { $set: { login2f: false } }
+        );
+        req.session.login2f = false;
+        res.json({ message: 'ok' });
+    } catch (err) {
+        console.error('Napaka pri izklopu 2FA:', err);
+        res.status(500).json({ message: 'Napaka strežnika', error: err.message });
     }
 });
 
