@@ -501,6 +501,29 @@ aedes.on('publish', (packet, client) => {
             else console.log(`Slika za login shranjena`);
 
         });
+
+        // linux prijava
+        const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+        const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
+        const process = exec(`${pythonCmd} "${scriptPath}"`);
+
+        process.stdout.on('data', (data) => {
+            console.log(`Python stdout: ${data}`);
+        });
+
+        process.stderr.on('data', (data) => {
+            console.error(`Napaka: ${data}`);
+        });
+
+        process.on('close', (code) => {
+            console.log(`Proces zaključen z izhodno kodo ${code}`);
+        });
+
+        process.on('error', (err) => {
+            console.error(`Napaka pri zagonu skripte: ${err.message}`);
+        });
+
+        // odgovor
         console.log(clients[clientId]);
         aedes.publish({
             topic: clients[clientId],
