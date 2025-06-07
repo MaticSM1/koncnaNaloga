@@ -161,8 +161,13 @@ app.get(`${proxy}/d`, (req, res) => {
 app.get(`${proxy}/nastavitve`, (req, res) => {
     if (req.session?.email) {
         console.log('Prijavljen:', req.session.email);
-        res.render('nastavitve');
-
+        res.render('nastavitve', {}, (err, html) => {
+            if (err) {
+                console.error('Napka nastavitve:', err);
+                return res.status(500).send('Napaka pri nalaganju strani');
+            }
+            res.send(html);
+        });
     } else {
         console.log('Neprijavljen obiskovalec');
         res.redirect('/');
