@@ -15,10 +15,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        val UUID = sharedPrefs.getString("UUID", null)
-        if(UUID != null) binding.loginButton.setText("MAIN")
-        else binding.loginButton.setText("LOG IN")
 
         binding.settingsButton.setOnClickListener {
             val intent = Intent(this, Settings::class.java)
@@ -29,8 +25,8 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, Authenticate::class.java)
             startActivity(intent)
         }
-        binding.loginButton.setOnClickListener {
 
+        binding.loginButton.setOnClickListener {
             val intent = if (binding.loginButton.text == "LOG IN") {
                 Intent(this, Login::class.java)
             } else {
@@ -38,7 +34,14 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(intent)
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
 
+        val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val UUID = sharedPrefs.getString("UUID", null)
+
+        binding.loginButton.text = if (UUID != null) "MAIN" else "LOG IN"
     }
 }

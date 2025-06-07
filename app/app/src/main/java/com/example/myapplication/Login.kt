@@ -68,7 +68,7 @@ class Login : AppCompatActivity() {
         jsonObject.put("password", password)
         jsonObject.put("UUID", uuid)
 
-        app.sendMessage("register", jsonObject.toString())
+        app.sendMessage("login", jsonObject.toString())
     }
 
 
