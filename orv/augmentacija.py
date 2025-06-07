@@ -3,8 +3,8 @@ import numpy as np
 import os
 import random
 inMapa = 'input/'
-outMapa = 'trainingData/'
-for folder in [outMapa, outMapa + "all/", outMapa + "d80/", outMapa + "d20/"]:
+outMapa = 'data/'
+for folder in [outMapa, outMapa + "all/", outMapa + "train/person1/", outMapa + "test/person1/"]:
     if os.path.exists(folder):
         for f in os.listdir(folder):
             file_path = os.path.join(folder, f)
@@ -12,8 +12,8 @@ for folder in [outMapa, outMapa + "all/", outMapa + "d80/", outMapa + "d20/"]:
                 os.remove(file_path)
 os.makedirs(outMapa, exist_ok=True)
 os.makedirs(outMapa+"all/", exist_ok=True)
-os.makedirs(outMapa+"d80/", exist_ok=True)
-os.makedirs(outMapa+"d20/", exist_ok=True)
+os.makedirs(outMapa+"train/person1/", exist_ok=True)
+os.makedirs(outMapa+"test/person1/", exist_ok=True)
 
 
 
@@ -160,14 +160,14 @@ if __name__ == "__main__":
 
             for f in d80_files:
                 src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "d80/", f)
+                dst = os.path.join(outMapa + "train/person1/", f)
                 img = cv2.imread(src)
                 if img is not None:
                     cv2.imwrite(dst, img)
 
             for f in d20_files:
                 src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "d20/", f)
+                dst = os.path.join(outMapa + "/test/person1/", f)
                 img = cv2.imread(src)
                 if img is not None:
                     cv2.imwrite(dst, img)
