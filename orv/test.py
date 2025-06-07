@@ -32,4 +32,5 @@ def predict_image(image_path):
 if __name__ == "__main__":
     path = "test/5.jpg"
     result = predict_image(path)
-    print("True - Slika je person1" if result else "False - Slika ni person1")
+    if result: print("True")
+    else: print("False")
