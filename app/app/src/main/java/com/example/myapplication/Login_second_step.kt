@@ -1,7 +1,9 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.app.Application
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
@@ -20,6 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.example.myapplication.databinding.ActivityLoginSecondStepBinding
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -32,12 +35,14 @@ class Login_second_step : AppCompatActivity() {
     private lateinit var imageCapture: ImageCapture
     private lateinit var cameraExecutor: ExecutorService
     private val handler = Handler(Looper.getMainLooper())
-    private val interval: Long = 5000 // 5 sekund
+    private val interval: Long = 500L
+    lateinit var app: MyApplication
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginSecondStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        app = application as MyApplication
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -102,9 +107,8 @@ class Login_second_step : AppCompatActivity() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                    binding.imageView.setImageBitmap(bitmap)
+                    sendImage(bitmap)
                 }
-
                 override fun onError(exception: ImageCaptureException) {
                     Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
                 }
@@ -112,6 +116,13 @@ class Login_second_step : AppCompatActivity() {
         )
     }
 
+
+    private fun sendImage(bitmap: Bitmap) {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val byteArray = outputStream.toByteArray()
+        app.sendRawBytesMessage("imageRegister", byteArray)
+    }
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
