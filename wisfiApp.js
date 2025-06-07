@@ -7,6 +7,7 @@ const jager = require('./jagerLinux');
 const fs = require('fs');
 const path = require('path');
 const { render } = require('ejs');
+const { exec } = require('child_process');
 require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
@@ -154,6 +155,21 @@ app.get(`/wisfi`, (req, res) => {
     res.redirect('/');
 });
 
+app.get(`${proxy}/run`, (req, res) => {
+    exec('python3 script.py', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`zagonu skripte: ${error.message}`);
+            return res.status(500).send('Napaka pri zagonu skripte');
+        }
+        if (stderr) {
+            console.error(`Napaka v skripti: ${stderr}`);
+        }
+        res.send(`Rezultat skripte: ${stdout}`);
+    });
+});
+
+
+
 app.get(`${proxy}/d`, (req, res) => {
     const filePath = path.join(__dirname, 'files', 'app-debug.apk');
     if (fs.existsSync(filePath)) {
@@ -203,6 +219,7 @@ mqttServer.listen(mqttPort, () => {
 aedes.on('client', (client) => {
     console.log('📡 Odjemalec povezan:', client?.id || 'neznano');
 });
+
 
 
 
