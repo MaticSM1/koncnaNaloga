@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -48,6 +49,11 @@ class Cam : AppCompatActivity() {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
+        }
+
+
+        binding.back.setOnClickListener{
+            finish()
         }
     }
 
@@ -123,7 +129,7 @@ class Cam : AppCompatActivity() {
                     if (rawValue != null) {
                         Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
                         Log.d("QR", "Najdeno: $rawValue")
-                        app.sendMessage("QR", rawValue)
+//                        app.sendMessage("QR", rawValue)
 
                         if (rawValue != oldValue) {
                             // Naloži URL s številko izdelka samo prvič
@@ -139,6 +145,7 @@ class Cam : AppCompatActivity() {
                 Log.e("QR", "Napaka pri branju QR kode: ${it.message}", it)
             }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

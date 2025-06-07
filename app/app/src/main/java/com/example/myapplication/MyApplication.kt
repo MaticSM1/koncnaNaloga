@@ -22,13 +22,7 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        var uuid = sharedPreferences.getString("UUID", null)
 
-        if (uuid == null) {
-            uuid = UUID.randomUUID().toString()
-            sharedPreferences.edit().putString("UUID", uuid).apply()
-        }
 
         initMqttClient()
     }
@@ -68,7 +62,6 @@ class MyApplication : Application() {
                 .payload(message.toByteArray(StandardCharsets.UTF_8))
                 .send()
 
-            Toast.makeText(this, "Sporočilo poslano na '$topic'", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("MQTT", "Napaka pri pošiljanju: ${e.message}")
             Toast.makeText(this, "Napaka pri pošiljanju: ${e.message}", Toast.LENGTH_LONG).show()
@@ -123,5 +116,11 @@ class MyApplication : Application() {
         } catch (e: Exception) {
             Log.e("MQTT", "Napaka pri naročanju: ${e.message}")
         }
+    }
+
+    fun setUUID(){
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        var uuid = sharedPreferences.getString("UUID", null)
+        sharedPreferences.edit().putString("UUID", uuid).apply()
     }
 }

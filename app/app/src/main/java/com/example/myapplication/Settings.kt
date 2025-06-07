@@ -17,6 +17,12 @@ class Settings : AppCompatActivity() {
         setContentView(binding.root)
         app = application as MyApplication
 
+        val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val addr = sharedPrefs.getString("addr", "")
+        val port = sharedPrefs.getString("port", "")
+        val server = addr + ':' + port
+        binding.MqqtAddr.setText(server)
+
         fun connectToMqqt(input:String){
             val server = input.split(':')
             val addr = server[0];

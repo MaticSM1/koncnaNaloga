@@ -50,6 +50,7 @@ class Login : AppCompatActivity() {
                 runOnUiThread {
                     binding.signOrLog.text= message
                     if(message == "ok"){
+                        app.setUUID()
                         val intent = Intent(this, Login_second_step::class.java)
                         startActivity(intent)
                     }else{
