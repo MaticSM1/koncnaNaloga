@@ -3,10 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 from dataset import get_data_loaders
-import time
 
 def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10):
-    train_loader, test_loader = dataloaders
+    train_loader, testloader = dataloaders
 
     for epoch in range(num_epochs):
         model.train()
@@ -45,7 +44,7 @@ def main():
     train_loader, test_loader, classes = get_data_loaders(data_dir, batch_size, input_size)
 
     model = models.resnet18(pretrained=True)
-    model.fc = nn.Linear(model.fc.in_features, len(classes))
+    model.fc = nn.Linear(model.fc.in_features, 2)
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss()

@@ -12,9 +12,12 @@ require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
 
+
 const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "";
+
+
 
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
@@ -51,6 +54,7 @@ app.set('view engine', 'ejs');
 
 //zacasno za razvoj 
 app.use(`${proxy}/orvinput`, express.static(__dirname + '/orv/input'));
+app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 
 
 // Routes
@@ -156,18 +160,63 @@ app.get(`/wisfi`, (req, res) => {
 });
 
 app.get(`${proxy}/run`, (req, res) => {
-    exec('python3 script.py', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`zagonu skripte: ${error.message}`);
-            return res.status(500).send('Napaka pri zagonu skripte');
-        }
-        if (stderr) {
-            console.error(`Napaka v skripti: ${stderr}`);
-        }
-        res.send(`Rezultat skripte: ${stdout}`);
+    const process = exec('python3 orv/testServer.py');
+
+    res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked'
+    });
+
+    process.stdout.on('data', (data) => {
+        res.write(data);
+        process.stdout.pipe(process.stdout);
+    });
+
+    process.stderr.on('data', (data) => {
+        res.write(`Napaka: ${data}`);
+        process.stderr.pipe(process.stderr);
+    });
+
+    process.on('close', (code) => {
+        res.write(`\nProces zaključen z izhodno kodo ${code}`);
+        res.end();
+    });
+
+    process.on('error', (err) => {
+        res.write(`Napaka pri zagonu skripte: ${err.message}`);
+        res.end();
     });
 });
 
+
+app.get(`${proxy}/run2`, (req, res) => {
+    const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+    const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
+    const process = exec(`${pythonCmd} "${scriptPath}"`);
+
+    res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked'
+    });
+
+    process.stdout.on('data', (data) => {
+        res.write(data);
+    });
+
+    process.stderr.on('data', (data) => {
+        res.write(`Napaka: ${data}`);
+    });
+
+    process.on('close', (code) => {
+        res.write(`\nProces zaključen z izhodno kodo ${code}`);
+        res.end();
+    });
+
+    process.on('error', (err) => {
+        res.write(`Napaka pri zagonu skripte: ${err.message}`);
+        res.end();
+    });
+});
 
 
 app.get(`${proxy}/d`, (req, res) => {
@@ -292,12 +341,18 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'login') {
         console.log('prijava:', packet.payload.toString());
-        const { username, password } = JSON.parse(packet.payload.toString());
+        const { username, password, UUID } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
                 const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
+                    if (UUID) {
+                        await db.collection('users').updateOne(
+                            { email: username },
+                            { $set: { phoneId: UUID } }
+                        );
+                    }
                     clients[clientId] = username
                     aedes.publish({
                         topic: username,
@@ -334,7 +389,8 @@ aedes.on('publish', (packet, client) => {
                 const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
-                    clients[clientId] = username
+                    clients[clientId] = user.email;
+                    console.log('Najden uporabnik:', user.email);
                     aedes.publish({
                         topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
@@ -374,5 +430,22 @@ aedes.on('publish', (packet, client) => {
         } else {
             console.log('Zasedeno');
         }
+    }
+
+    if (packet.topic === 'imageLogin') {
+        const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
+        if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
+        fs.writeFile(path.join(inputLoginDir, `test.jpg`), packet.payload, err => {
+            if (err) console.error('Napaka slike za login', err);
+            else console.log(`Slika za login shranjena`);
+
+        });
+        console.log(clients[clientId]);
+        aedes.publish({
+            topic: clients[clientId],
+            payload: Buffer.from('ok'),
+            qos: 0,
+            retain: false
+        });
     }
 });

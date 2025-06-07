@@ -3,8 +3,8 @@ import numpy as np
 import os
 import random
 inMapa = 'input/'
-outMapa = 'trainingData/'
-for folder in [outMapa, outMapa + "all/", outMapa + "d80/", outMapa + "d20/"]:
+outMapa = 'data/'
+for folder in [outMapa, outMapa + "all/", outMapa + "train/person1/", outMapa + "test/person1/"]:
     if os.path.exists(folder):
         for f in os.listdir(folder):
             file_path = os.path.join(folder, f)
@@ -12,8 +12,8 @@ for folder in [outMapa, outMapa + "all/", outMapa + "d80/", outMapa + "d20/"]:
                 os.remove(file_path)
 os.makedirs(outMapa, exist_ok=True)
 os.makedirs(outMapa+"all/", exist_ok=True)
-os.makedirs(outMapa+"d80/", exist_ok=True)
-os.makedirs(outMapa+"d20/", exist_ok=True)
+os.makedirs(outMapa+"train/person1/", exist_ok=True)
+os.makedirs(outMapa+"test/person1/", exist_ok=True)
 
 
 
@@ -98,6 +98,51 @@ def procesiraj_sliko(pot_do_slike,imeDatoteke):
     noisy = cv2.add(brezSuma, noise)
     cv2.imwrite(potShranjevanja +'noisy.jpg', noisy)
 
+    # ostro
+    matrikaOstro = np.array([[0, -1, 0],
+                               [-1, 5, -1],
+                               [0, -1, 0]])
+    ostro = uporabi_filter(brezSuma, matrikaOstro, 0)
+    cv2.imwrite(potShranjevanja + '-ostro.jpg', ostro)
+
+    matrikaTest = np.array([[1, 1, 1],
+                           [2, 2, 2],
+                           [1, 1, 0]], dtype='float32') / 9.0
+    testSlika = uporabi_filter(brezSuma, matrikaTest, 0)
+    cv2.imwrite(potShranjevanja + '-test.jpg', testSlika)
+
+    # na eni strani ozja
+    cols = brezSuma.shape[1]
+    rows = brezSuma.shape[0]
+    map_x = np.zeros((rows, cols), dtype=np.float32)
+    map_y = np.zeros((rows, cols), dtype=np.float32)
+    for y in range(rows):
+        for x in range(cols):
+            mocStiska = 1 - 0.5 * (x / (cols - 1))
+            map_x[y, x] = x * mocStiska
+            map_y[y, x] = y
+    stisnjena = cv2.remap(brezSuma, map_x, map_y, interpolation=cv2.INTER_LINEAR)
+    cv2.imwrite(potShranjevanja + '-stisnjena.jpg', stisnjena)
+
+    # senca
+    shadow = np.zeros_like(brezSuma)    
+    shadow[:] = (50, 50, 50)
+    shadowed = cv2.addWeighted(brezSuma, 1, shadow, 0.5, 0)
+    cv2.imwrite(potShranjevanja + '-senca.jpg', shadowed)
+
+    # dodaj prah 
+    num_pixels = 1000
+    for _ in range(num_pixels):
+        y = random.randint(0, brezSuma.shape[0] - 1)
+        x = random.randint(0, brezSuma.shape[1] - 1)
+        brezSuma[y, x] = (200, 200, 200) # siva
+    cv2.imwrite(potShranjevanja + '-prah.jpg', brezSuma)
+
+
+
+
+
+
 if __name__ == "__main__":
     for filename in os.listdir(inMapa):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -105,27 +150,23 @@ if __name__ == "__main__":
             procesiraj_sliko(pot_do_slike,filename)
 
 
-            #! Razdelitev slik 
+    #! Razdelitev slik 
 
-            # nakljucno
-            all_files = [f for f in os.listdir(outMapa + "all/") if os.path.isfile(os.path.join(outMapa + "all/", f))]
-            random.shuffle(all_files)
-            split_idx = int(0.8 * len(all_files))
-            d80_files = all_files[:split_idx]
-            d20_files = all_files[split_idx:]
+    all_files = [f for f in os.listdir(outMapa + "all/") if os.path.isfile(os.path.join(outMapa + "all/", f))]
+    random.shuffle(all_files)
 
-            # 80% 
-            for f in d80_files:
-                src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "d80/", f)
-                img = cv2.imread(src)
-                if img is not None:
-                    cv2.imwrite(dst, img)
 
-            # 20% 
-            for f in d20_files:
-                src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "d20/", f)
-                img = cv2.imread(src)
-                if img is not None:
-                    cv2.imwrite(dst, img)
+    for i in range(len(all_files)):
+        f = all_files[i]
+        if i < len(all_files) * 0.8:
+            src = os.path.join(outMapa + "all/", f)
+            dst = os.path.join(outMapa + "train/person1/", f)
+            img = cv2.imread(src)
+            if img is not None:
+                cv2.imwrite(dst, img)
+        else:
+            src = os.path.join(outMapa + "all/", f)
+            dst = os.path.join(outMapa + "test/person1/", f)
+            img = cv2.imread(src)
+            if img is not None:
+                cv2.imwrite(dst, img)
