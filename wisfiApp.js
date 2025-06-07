@@ -130,6 +130,8 @@ app.post(`${proxy}/login`, async (req, res) => {
         if (user && user.password === password) {
             req.session.email = email;
             req.session.login2f = user.login2f;
+        req.session.login2fPotrditev = false
+
             res.status(200).json({ message: 'Prijava uspešna' });
         } else {
             res.status(401).json({ message: 'Napačni podatki za prijavo' });
