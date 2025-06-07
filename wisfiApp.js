@@ -160,7 +160,7 @@ app.get(`${proxy}/d`, (req, res) => {
 app.get(`${proxy}/nastavitve`, (req, res) => {
     if (req.session?.email) {
         console.log('Prijavljen:', req.session.email);
-               res.render('nastavitve');
+        res.render('nastavitve');
 
     } else {
         console.log('Neprijavljen obiskovalec');
@@ -226,32 +226,110 @@ aedes.on('publish', (packet, client) => {
 
 
     if (packet.topic === 'register') {
-        console.log('prijava:', packet.payload.toString());
-        const { username, password } = JSON.parse(packet.payload.toString());
-        console.log(username, password);
-        clients[clientId] = username
-        aedes.publish({
-            topic: username,
-            payload: Buffer.from('Prijava uspešna'),
-            qos: 0,
-            retain: false
-        });
-
+        const { username, password, UUID } = JSON.parse(packet.payload.toString());
+        (async () => {
+            try {
+                const db = client.db('users');
+                const existingUser = await db.collection('users').findOne({ email: username });
+                if (existingUser) {
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('Email že obstaja'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
+                    clients[clientId] = username;
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri registraciji:', err);
+                aedes.publish({
+                    topic: username,
+                    payload: Buffer.from('Napaka pri registraciji'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
     }
 
     if (packet.topic === 'login') {
         console.log('prijava:', packet.payload.toString());
         const { username, password } = JSON.parse(packet.payload.toString());
-        console.log(username, password);
-        clients[clientId] = username
-        aedes.publish({
-            topic: username,
-            payload: Buffer.from('ok'),
-            qos: 0,
-            retain: false
-        });
-
+        (async () => {
+            try {
+                const db = client.db('users');
+                const user = await db.collection('users').findOne({ email: username });
+                if (user && user.password === password) {
+                    clients[clientId] = username
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('Napačni podatki za prijavo'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri prijavi:', err);
+                aedes.publish({
+                    topic: username,
+                    payload: Buffer.from('Napaka pri prijavi'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
     }
+
+    if (packet.topic === 'UUID') {
+        const { UUID } = JSON.parse(packet.payload.toString());
+        (async () => {
+            try {
+                const db = client.db('users');
+                const user = await db.collection('users').findOne({ phoneId: UUID });
+                if (user) {
+                    clients[clientId] = username
+                    aedes.publish({
+                        topic: user.email,
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    aedes.publish({
+                        topic: 'UUID',
+                        payload: Buffer.from('UUID ne obstaja'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri preverjanju UUID:', err);
+                aedes.publish({
+                    topic: 'UUID',
+                    payload: Buffer.from('Napaka pri preverjanju UUID'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
+    }
+
+
 
     if (packet.topic === 'imageRegister') {
 
