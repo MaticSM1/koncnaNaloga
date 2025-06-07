@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -44,7 +45,9 @@ class Login : AppCompatActivity() {
     }
 
     private fun signInUser(email: String, password: String) {
-        app.subscribe(email)
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("username", email).apply()
+        app.subscribe()
         app.onMqttMessage = { topic, message ->
             if (topic == email) {
                 runOnUiThread {
@@ -59,15 +62,20 @@ class Login : AppCompatActivity() {
                 }
             }
         }
+        val uuid = app.setUUID()
         val jsonObject = JSONObject()
         jsonObject.put("username", email)
         jsonObject.put("password", password)
-        app.sendMessage("login", jsonObject.toString())
+        jsonObject.put("UUID", uuid)
+
+        app.sendMessage("register", jsonObject.toString())
     }
 
 
     private fun createUser(email: String, password: String) {
-        app.subscribe(email)
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("username", email).apply()
+        app.subscribe()
         app.onMqttMessage = { topic, message ->
             if (topic == email) {
                 runOnUiThread {
@@ -81,9 +89,14 @@ class Login : AppCompatActivity() {
                 }
             }
         }
+
+
+        val uuid = app.setUUID()
         val jsonObject = JSONObject()
         jsonObject.put("username", email)
         jsonObject.put("password", password)
+        jsonObject.put("UUID", uuid)
         app.sendMessage("register", jsonObject.toString())
+
     }
 }
