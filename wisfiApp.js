@@ -381,6 +381,7 @@ aedes.on('publish', (packet, client) => {
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
                     clients[clientId] = user.email;
+                    console.log('Najden uporabnik:', user.email);
                     aedes.publish({
                         topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
