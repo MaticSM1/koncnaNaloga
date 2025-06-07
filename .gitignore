@@ -3,5 +3,7 @@ sites/public/data/
 .env
 orv/logs/data/train/
 orv/logs/data/test/
+orv/logs/trainingData/
+
 
 
