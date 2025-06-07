@@ -35,6 +35,8 @@ def uporabi_filter(img, matrika, rocno):
     else:
         return cv2.filter2D(img, -1, matrika)
 
+    
+
 def rotirajSliko(img, kot):
     (h, w) = img.shape[:2]
     center = (w // 2, h // 2)
@@ -42,8 +44,13 @@ def rotirajSliko(img, kot):
     return cv2.warpAffine(img, M, (w, h))
 
 def procesiraj_sliko(pot_do_slike,imeDatoteke):
+    print(f"Procesiram sliko: {pot_do_slike}")
     potShranjevanja = outMapa + "all/" + imeDatoteke
     img = cv2.imread(pot_do_slike)
+    h, w = img.shape[:2]
+    new_w = 800
+    new_h = int(h * (new_w / w))
+    img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
     if img is None:
         raise FileNotFoundError(f"Slika {pot_do_slike} ni bila najdena.")
 
