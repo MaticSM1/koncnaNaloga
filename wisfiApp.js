@@ -210,7 +210,7 @@ console.log('prijava:', packet.payload.toString());
             trenutnaRegistracija.id = clientId;
         }
 
-        if (clientId == trenutnaRegistracija.id) {
+        if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
             fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike}.jpg`), packet.payload, err => {
                 if (err) console.error('Napaka pri shranjevanju slike', err);
                 trenutnaRegistracija.slike++;
