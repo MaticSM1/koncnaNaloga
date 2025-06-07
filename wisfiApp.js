@@ -156,15 +156,31 @@ app.get(`/wisfi`, (req, res) => {
 });
 
 app.get(`${proxy}/run`, (req, res) => {
-    exec('python3 script.py', (error, stdout, stderr) => {
-        if (error) {
-            console.error(`zagonu skripte: ${error.message}`);
-            return res.status(500).send('Napaka pri zagonu skripte');
-        }
-        if (stderr) {
-            console.error(`Napaka v skripti: ${stderr}`);
-        }
-        res.send(`Rezultat skripte: ${stdout}`);
+    const process = exec('py orv/testServer.py');
+
+    res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked'
+    });
+
+    process.stdout.on('data', (data) => {
+        res.write(data);
+        process.stdout.pipe(process.stdout); // print to server console as well
+    });
+
+    process.stderr.on('data', (data) => {
+        res.write(`Napaka: ${data}`);
+        process.stderr.pipe(process.stderr); // print errors to server console
+    });
+
+    process.on('close', (code) => {
+        res.write(`\nProces zaključen z izhodno kodo ${code}`);
+        res.end();
+    });
+
+    process.on('error', (err) => {
+        res.write(`Napaka pri zagonu skripte: ${err.message}`);
+        res.end();
     });
 });
 
@@ -374,5 +390,15 @@ aedes.on('publish', (packet, client) => {
         } else {
             console.log('Zasedeno');
         }
+    }
+
+    if (packet.topic === 'imageLogin') {
+    const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
+    if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
+    const timestamp = Date.now();
+    fs.writeFile(path.join(inputLoginDir, `${clientId}_${timestamp}.jpg`), packet.payload, err => {
+        if (err) console.error('Napaka slike za login', err);
+        else console.log(`Slika za login shranjena: ${clientId}_${timestamp}.jpg`);
+    });
     }
 });
