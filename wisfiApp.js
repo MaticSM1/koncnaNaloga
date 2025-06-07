@@ -425,16 +425,15 @@ aedes.on('publish', (packet, client) => {
     if (packet.topic === 'imageLogin') {
         const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
         if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
-        const timestamp = Date.now();
-        fs.writeFile(path.join(inputLoginDir, `${clientId}_${timestamp}.jpg`), packet.payload, err => {
+        fs.writeFile(path.join(inputLoginDir, `test.jpg`), packet.payload, err => {
             if (err) console.error('Napaka slike za login', err);
-            else console.log(`Slika za login shranjena: ${clientId}_${timestamp}.jpg`);
+            else console.log(`Slika za login shranjena`);
         });
-        aedes.publish({
-            topic: clients[clientId],
-            payload: Buffer.from('ok'),
-            qos: 0,
-            retain: false
-        });
+        // aedes.publish({
+        //     topic: clients[clientId],
+        //     payload: Buffer.from('ok'),
+        //     qos: 0,
+        //     retain: false
+        // });
     }
 });
