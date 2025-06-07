@@ -380,7 +380,7 @@ aedes.on('publish', (packet, client) => {
                 const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
-                    clients[clientId] = username
+                    clients[clientId] = user.email;
                     aedes.publish({
                         topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
