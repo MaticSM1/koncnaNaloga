@@ -13,11 +13,11 @@ for i in range(20):
         with open(output_path, "wb") as f:
             f.write(response.content)
         with Image.open(output_path) as img:
-            width = 800
+            width = img.width
             ratio = width / img.width
             height = int(img.height * ratio)
             img = img.resize((width, height), Image.LANCZOS)
             img.save(output_path)
         print(f"Slika {i}.jpg snajena {output_path}")
-    else:
+
    
