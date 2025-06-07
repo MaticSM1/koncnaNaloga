@@ -519,6 +519,8 @@ aedes.on('publish', (packet, client) => {
                     qos: 0,
                     retain: false
                 });
+                avtentikacija = clients[clientId];
+                avtentikacijaDate = new Date();
             } else if (data == "False\n") {
                 console.log('Napaka pri prijavi');
                 aedes.publish({
