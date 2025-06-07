@@ -156,7 +156,7 @@ app.get(`/wisfi`, (req, res) => {
 });
 
 app.get(`${proxy}/run`, (req, res) => {
-    const process = exec('py orv/testServer.py');
+    const process = exec('python3 orv/testServer.py');
 
     res.writeHead(200, {
         'Content-Type': 'text/plain; charset=utf-8',
