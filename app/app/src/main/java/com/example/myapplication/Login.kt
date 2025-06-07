@@ -36,7 +36,7 @@ class Login : AppCompatActivity() {
                 Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
             }
 
-            if (binding.loginButton.text == "Login")
+            if (binding.loginButton.text == "Log in")
                 signInUser(email, password)
             else
                 createUser(email, password)
@@ -49,6 +49,12 @@ class Login : AppCompatActivity() {
             if (topic == email) {
                 runOnUiThread {
                     binding.signOrLog.text= message
+                    if(message == "ok"){
+                        val intent = Intent(this, Login_second_step::class.java)
+                        startActivity(intent)
+                    }else{
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

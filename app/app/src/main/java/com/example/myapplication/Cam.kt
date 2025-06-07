@@ -31,7 +31,7 @@ class Cam : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val intervalMs = 100L
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-    private var once = true
+    private var oldValue :String = ""
     lateinit var app: MyApplication
 
 
@@ -125,10 +125,10 @@ class Cam : AppCompatActivity() {
                         Log.d("QR", "Najdeno: $rawValue")
                         app.sendMessage("QR", rawValue)
 
-                        if (once) {
+                        if (rawValue != oldValue) {
                             // Naloži URL s številko izdelka samo prvič
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
-                            once = false
+                            oldValue = rawValue
                         }
 
                         break

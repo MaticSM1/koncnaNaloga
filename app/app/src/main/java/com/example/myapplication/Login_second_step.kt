@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.Manifest
 import android.app.Application
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -52,12 +53,20 @@ class Login_second_step : AppCompatActivity() {
             )
         }
 
+        binding.buttonSkip.setOnClickListener{
+            handler.removeCallbacksAndMessages(null) // ustavi zajem
+            val intent = Intent(this, Cam::class.java)
+            startActivity(intent)
+        }
+
+
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun allPermissionsGranted(): Boolean {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
+
 
 
     private fun startCamera() {
@@ -123,6 +132,8 @@ class Login_second_step : AppCompatActivity() {
         val byteArray = outputStream.toByteArray()
         app.sendRawBytesMessage("imageRegister", byteArray)
     }
+
+
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
