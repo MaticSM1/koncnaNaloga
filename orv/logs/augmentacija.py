@@ -1,9 +1,20 @@
 import cv2
 import numpy as np
 import os
+import random
 inMapa = 'input/'
 outMapa = 'trainingData/'
+for folder in [outMapa, outMapa + "all/", outMapa + "d80/", outMapa + "d20/"]:
+    if os.path.exists(folder):
+        for f in os.listdir(folder):
+            file_path = os.path.join(folder, f)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 os.makedirs(outMapa, exist_ok=True)
+os.makedirs(outMapa+"all/", exist_ok=True)
+os.makedirs(outMapa+"d80/", exist_ok=True)
+os.makedirs(outMapa+"d20/", exist_ok=True)
+
 
 
 def uporabi_filter(img, matrika, rocno):
@@ -25,6 +36,7 @@ def uporabi_filter(img, matrika, rocno):
         return cv2.filter2D(img, -1, matrika)
 
 def procesiraj_sliko(pot_do_slike,imeDatoteke):
+    potShranjevanja = outMapa + "all/" + imeDatoteke
     img = cv2.imread(pot_do_slike)
     if img is None:
         raise FileNotFoundError(f"Slika {pot_do_slike} ni bila najdena.")
@@ -37,37 +49,63 @@ def procesiraj_sliko(pot_do_slike,imeDatoteke):
     ], dtype='float32') / 9.0  
 
     brezSuma = uporabi_filter(img, matrika, 0)
-    cv2.imwrite(outMapa + imeDatoteke +'filtered.jpg', brezSuma)
+    cv2.imwrite(potShranjevanja +'filtered.jpg', brezSuma)
 
     hsv = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2HSV)
     lab = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2LAB)
-    cv2.imwrite(outMapa + imeDatoteke +'hsv.jpg', hsv)
-    cv2.imwrite(outMapa + imeDatoteke +'lab.jpg', lab)
+    cv2.imwrite(potShranjevanja +'hsv.jpg', hsv)
+    cv2.imwrite(potShranjevanja +'lab.jpg', lab)
 
     gray = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2GRAY)
     gray_norm = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX)
-    cv2.imwrite(outMapa + imeDatoteke +'gray.jpg', gray_norm)
+    cv2.imwrite(potShranjevanja +'gray.jpg', gray_norm)
 
     flip = np.fliplr(brezSuma)
-    cv2.imwrite(outMapa + imeDatoteke +'flip.jpg', flip)
+    cv2.imwrite(potShranjevanja +'flip.jpg', flip)
 
     (h, w) = brezSuma.shape[:2]
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, 15, 1.0)
     rotated = cv2.warpAffine(brezSuma, M, (w, h))
-    cv2.imwrite(outMapa + imeDatoteke +'rotated.jpg', rotated)
+    cv2.imwrite(potShranjevanja +'rotated.jpg', rotated)
 
     alpha = 1.5  
     beta = 0    
     contrast = cv2.convertScaleAbs(brezSuma, alpha=alpha, beta=beta)
-    cv2.imwrite(outMapa + imeDatoteke +'contrast.jpg', contrast)
+    cv2.imwrite(potShranjevanja +'contrast.jpg', contrast)
 
     noise = np.random.randint(0, 50, brezSuma.shape, dtype='uint8')
     noisy = cv2.add(brezSuma, noise)
-    cv2.imwrite(outMapa + imeDatoteke +'noisy.jpg', noisy)
+    cv2.imwrite(potShranjevanja +'noisy.jpg', noisy)
 
 if __name__ == "__main__":
     for filename in os.listdir(inMapa):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             pot_do_slike = os.path.join(inMapa, filename)
             procesiraj_sliko(pot_do_slike,filename)
+
+
+            #! Razdelitev slik 
+
+            # nakljucno
+            all_files = [f for f in os.listdir(outMapa + "all/") if os.path.isfile(os.path.join(outMapa + "all/", f))]
+            random.shuffle(all_files)
+            split_idx = int(0.8 * len(all_files))
+            d80_files = all_files[:split_idx]
+            d20_files = all_files[split_idx:]
+
+            # 80% 
+            for f in d80_files:
+                src = os.path.join(outMapa + "all/", f)
+                dst = os.path.join(outMapa + "d80/", f)
+                img = cv2.imread(src)
+                if img is not None:
+                    cv2.imwrite(dst, img)
+
+            # 20% 
+            for f in d20_files:
+                src = os.path.join(outMapa + "all/", f)
+                dst = os.path.join(outMapa + "d20/", f)
+                img = cv2.imread(src)
+                if img is not None:
+                    cv2.imwrite(dst, img)
