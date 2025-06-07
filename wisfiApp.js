@@ -51,6 +51,7 @@ app.set('view engine', 'ejs');
 
 //zacasno za razvoj 
 app.use(`${proxy}/orvinput`, express.static(__dirname + '/orv/input'));
+app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 
 
 // Routes
@@ -165,12 +166,12 @@ app.get(`${proxy}/run`, (req, res) => {
 
     process.stdout.on('data', (data) => {
         res.write(data);
-        process.stdout.pipe(process.stdout); 
+        process.stdout.pipe(process.stdout);
     });
 
     process.stderr.on('data', (data) => {
         res.write(`Napaka: ${data}`);
-        process.stderr.pipe(process.stderr); 
+        process.stderr.pipe(process.stderr);
     });
 
     process.on('close', (code) => {
@@ -422,12 +423,18 @@ aedes.on('publish', (packet, client) => {
     }
 
     if (packet.topic === 'imageLogin') {
-    const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
-    if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
-    const timestamp = Date.now();
-    fs.writeFile(path.join(inputLoginDir, `${clientId}_${timestamp}.jpg`), packet.payload, err => {
-        if (err) console.error('Napaka slike za login', err);
-        else console.log(`Slika za login shranjena: ${clientId}_${timestamp}.jpg`);
-    });
+        const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
+        if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
+        const timestamp = Date.now();
+        fs.writeFile(path.join(inputLoginDir, `${clientId}_${timestamp}.jpg`), packet.payload, err => {
+            if (err) console.error('Napaka slike za login', err);
+            else console.log(`Slika za login shranjena: ${clientId}_${timestamp}.jpg`);
+        });
+        aedes.publish({
+            topic: clients[clientId],
+            payload: Buffer.from('ok'),
+            qos: 0,
+            retain: false
+        });
     }
 });
