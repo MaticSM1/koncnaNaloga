@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { render } = require('ejs');
 const { exec } = require('child_process');
+const e = require('express');
 require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
@@ -501,12 +502,47 @@ aedes.on('publish', (packet, client) => {
             else console.log(`Slika za login shranjena`);
 
         });
-        console.log(clients[clientId]);
-        aedes.publish({
-            topic: clients[clientId],
-            payload: Buffer.from('ok'),
-            qos: 0,
-            retain: false
+
+        // linux prijava
+        const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+        const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
+        const process = exec(`${pythonCmd} "${scriptPath}"`);
+
+        process.stdout.on('data', (data) => {
+            console.log(`Python stdout: ${data}`);
+            if (data == "True\n") {
+                // odgovor
+                console.log(clients[clientId]);
+                aedes.publish({
+                    topic: clients[clientId],
+                    payload: Buffer.from('ok'),
+                    qos: 0,
+                    retain: false
+                });
+            } else if (data == "False\n") {
+                console.log('Napaka pri prijavi');
+                aedes.publish({
+                    topic: clients[clientId],
+                    payload: Buffer.from('Napaka pri prijavi'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+
         });
+
+        process.stderr.on('data', (data) => {
+            console.error(`Napaka: ${data}`);
+        });
+
+        process.on('close', (code) => {
+            console.log(`Proces zaključen z izhodno kodo ${code}`);
+        });
+
+        process.on('error', (err) => {
+            console.error(`Napaka pri zagonu skripte: ${err.message}`);
+        });
+
+
     }
 });

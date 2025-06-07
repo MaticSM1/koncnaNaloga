@@ -36,6 +36,6 @@ def predict_image(image_path):
 
 # Glavni del programa
 if __name__ == "__main__":
-    path = "orv/input/test.jpg"
+    path = "orv/inputLogin/test.jpg"
     result = predict_image(path)
     print(result)
