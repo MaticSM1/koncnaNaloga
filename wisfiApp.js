@@ -203,6 +203,14 @@ aedes.on('client', (client) => {
 
 
 
+const orvInputDir = path.join(__dirname, 'orv/input');
+let trenutnaRegistracija = {
+    id: "",
+    timestamp: Date.now(),
+    slike: 0,
+    status: ""
+};
+
 aedes.on('publish', (packet, client) => {
 
     if (!packet.topic || packet.topic.startsWith('$SYS')) return;
@@ -331,15 +339,6 @@ aedes.on('publish', (packet, client) => {
             }
         })();
     }
-
-
-    const orvInputDir = path.join(__dirname, 'orv/input');
-let trenutnaRegistracija = {
-    id: "",
-    timestamp: Date.now(),
-    slike: 0,
-    status: ""
-}
 
     if (packet.topic === 'imageRegister') {
 
