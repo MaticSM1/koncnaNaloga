@@ -20,7 +20,7 @@ class Settings : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         val addr = sharedPrefs.getString("addr", "")
         val port = sharedPrefs.getString("port", "")
-        val server = addr + ':' + port
+        val server = "dskslkddslk"
         binding.MqqtAddr.setText(server)
 
         fun connectToMqqt(input:String){
@@ -37,12 +37,12 @@ class Settings : AppCompatActivity() {
             Toast.makeText(this, "Ping poslan iz Settings", Toast.LENGTH_SHORT).show()
         }
 
-        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val input = binding.MqqtAddr.text.toString().trim()
-                connectToMqqt(input)
-            }
-        }
+//        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
+//            if (!hasFocus) {
+//                val input = binding.MqqtAddr.text.toString().trim()
+//                connectToMqqt(input)
+//            }
+//        }
 
         binding.server.setOnClickListener{
             val server ="193.95.229.123:1883"
@@ -62,8 +62,5 @@ class Settings : AppCompatActivity() {
         binding.logout.setOnClickListener{
             app.logout()
         }
-
-
-
     }
 }

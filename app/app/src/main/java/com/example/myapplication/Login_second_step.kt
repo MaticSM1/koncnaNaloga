@@ -54,8 +54,8 @@ class Login_second_step : AppCompatActivity() {
         }
 
         binding.buttonSkip.setOnClickListener{
-            handler.removeCallbacksAndMessages(null) // ustavi zajem
-            val intent = Intent(this, Cam::class.java)
+            handler.removeCallbacksAndMessages(null)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 

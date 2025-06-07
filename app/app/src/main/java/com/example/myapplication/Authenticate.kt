@@ -132,7 +132,8 @@ class Authenticate : AppCompatActivity() {
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 isWaitingForResponse = false
-                takePhoto()
+                Toast.makeText(this, "N beseda:", Toast.LENGTH_LONG).show()
+//                takePhoto()
             }
         }
     }

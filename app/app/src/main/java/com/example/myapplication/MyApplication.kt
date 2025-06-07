@@ -29,10 +29,19 @@ class MyApplication : Application() {
 
     fun initMqttClient() {
         val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        val addr = sharedPrefs.getString("addr", "193.95.229.123") ?: "193.95.229.123"
-        val port = sharedPrefs.getString("port", "1883") ?: "1883"
-        val UUID = sharedPrefs.getString("UUID", "") ?: ""
+        val editor = sharedPrefs.edit()
+        val defaultAddr = "193.95.229.123"
+        val defaultPort = "1883"
+        val addr = sharedPrefs.getString("addr", null) ?: run {
+            editor.putString("addr", defaultAddr)
+            defaultAddr
+        }
+        val port = sharedPrefs.getString("port", null) ?: run {
+            editor.putString("port", defaultPort)
+            defaultPort
+        }
 
+        editor.apply()
         try {
             mqttClient = MqttClient.builder()
                 .useMqttVersion3()
@@ -42,7 +51,6 @@ class MyApplication : Application() {
                 .buildBlocking()
 
             mqttClient.connect()
-            sendMessage("UUID", UUID)
             Toast.makeText(this, "Povezava uspešna", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
@@ -138,6 +146,7 @@ class MyApplication : Application() {
         val editor = sharedPreferences.edit()
         editor.clear()
         editor.apply()
+        Toast.makeText(this, "Odjava uspesna", Toast.LENGTH_LONG).show()
     }
 
 
