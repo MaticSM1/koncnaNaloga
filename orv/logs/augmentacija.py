@@ -35,6 +35,12 @@ def uporabi_filter(img, matrika, rocno):
     else:
         return cv2.filter2D(img, -1, matrika)
 
+def rotirajSliko(img, kot):
+    (h, w) = img.shape[:2]
+    center = (w // 2, h // 2)
+    M = cv2.getRotationMatrix2D(center, kot, 1.0)
+    return cv2.warpAffine(img, M, (w, h))
+
 def procesiraj_sliko(pot_do_slike,imeDatoteke):
     potShranjevanja = outMapa + "all/" + imeDatoteke
     img = cv2.imread(pot_do_slike)
@@ -49,25 +55,32 @@ def procesiraj_sliko(pot_do_slike,imeDatoteke):
     ], dtype='float32') / 9.0  
 
     brezSuma = uporabi_filter(img, matrika, 0)
-    cv2.imwrite(potShranjevanja +'filtered.jpg', brezSuma)
+    cv2.imwrite(potShranjevanja +'-mehka.jpg', brezSuma)
 
-    hsv = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2HSV)
-    lab = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2LAB)
-    cv2.imwrite(potShranjevanja +'hsv.jpg', hsv)
-    cv2.imwrite(potShranjevanja +'lab.jpg', lab)
+    #hsv = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2HSV)
+   # lab = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2LAB)
+   # cv2.imwrite(potShranjevanja +'hsv.jpg', hsv)
+    #cv2.imwrite(potShranjevanja +'lab.jpg', lab)
 
     gray = cv2.cvtColor(brezSuma, cv2.COLOR_BGR2GRAY)
     gray_norm = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX)
-    cv2.imwrite(potShranjevanja +'gray.jpg', gray_norm)
+    cv2.imwrite(potShranjevanja +'-gray.jpg', gray_norm)
 
     flip = np.fliplr(brezSuma)
-    cv2.imwrite(potShranjevanja +'flip.jpg', flip)
+    cv2.imwrite(potShranjevanja +'-flip.jpg', flip)
 
-    (h, w) = brezSuma.shape[:2]
-    center = (w // 2, h // 2)
-    M = cv2.getRotationMatrix2D(center, 15, 1.0)
-    rotated = cv2.warpAffine(brezSuma, M, (w, h))
-    cv2.imwrite(potShranjevanja +'rotated.jpg', rotated)
+    # rotacija 15c
+    rotacija = rotirajSliko(brezSuma, 5)
+    cv2.imwrite(potShranjevanja +'-rotacija5.jpg', rotacija)
+    # rotacija 30c
+    rotacija2 = rotirajSliko(brezSuma, 10)
+    cv2.imwrite(potShranjevanja +'-rotacija10.jpg', rotacija2)
+    # rotacija 20c
+    rotacija3 = rotirajSliko(brezSuma, 20)
+    cv2.imwrite(potShranjevanja +'-rotacija20.jpg', rotacija3)
+    # rotacija -10c
+    rotacija4 = rotirajSliko(brezSuma, -8) 
+    cv2.imwrite(potShranjevanja +'-rotacija-8.jpg', rotacija4)
 
     alpha = 1.5  
     beta = 0    
