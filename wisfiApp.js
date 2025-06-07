@@ -48,6 +48,10 @@ app.use(session({
 app.use(`${proxy}/public`, express.static(__dirname + '/sites/public'));
 app.set('view engine', 'ejs');
 
+//zacasno za razvoj 
+app.use(`${proxy}/orvinput`, express.static(__dirname + '/orv/input'));
+
+
 // Routes
 app.get('/', (req, res) => {
     console.log(req.session.email);
@@ -76,7 +80,7 @@ app.post(`${proxy}/register`, async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'Email in geslo sta obvezna' });
 
-     try {
+    try {
         const db = global.client.db('users');
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
@@ -93,7 +97,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 app.post(`${proxy}/login`, async (req, res) => {
     const { email, password } = req.body;
     try {
-         const db = global.client.db('users');
+        const db = global.client.db('users');
         const user = await db.collection('users').findOne({ email });
         if (user && user.password === password) {
             req.session.email = email;
@@ -238,7 +242,7 @@ aedes.on('publish', (packet, client) => {
         const { username, password, UUID } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
-                 const db = global.client.db('users');
+                const db = global.client.db('users');
                 const existingUser = await db.collection('users').findOne({ email: username });
                 if (existingUser) {
                     aedes.publish({
@@ -274,7 +278,7 @@ aedes.on('publish', (packet, client) => {
         const { username, password } = JSON.parse(packet.payload.toString());
         (async () => {
             try {
-              const db = global.client.db('users');
+                const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
                     clients[clientId] = username
@@ -306,11 +310,11 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'UUID') {
         console.log('UUID:', packet.payload.toString());
-       let UUID  = packet.payload.toString()
-       console.log('UUID:', UUID);
+        let UUID = packet.payload.toString()
+        console.log('UUID:', UUID);
         (async () => {
             try {
-              const db = global.client.db('users');
+                const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
                     clients[clientId] = username
@@ -341,11 +345,9 @@ aedes.on('publish', (packet, client) => {
     }
 
     if (packet.topic === 'imageRegister') {
-
         if (trenutnaRegistracija.id == "") {
             trenutnaRegistracija.id = clientId;
         }
-
         if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
             trenutnaRegistracija.slike++;
             fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike - 1}.jpg`), packet.payload, err => {
@@ -355,6 +357,5 @@ aedes.on('publish', (packet, client) => {
         } else {
             console.log('Zasedeno');
         }
-
     }
 });
