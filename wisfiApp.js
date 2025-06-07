@@ -6,6 +6,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jagerLinux');
 const fs = require('fs');
 const path = require('path');
+const { render } = require('ejs');
 require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
@@ -28,9 +29,9 @@ async function run() {
     try {
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB connected!");
+        console.log("✅ MongoDB povezan");
     } catch (err) {
-        console.error("❌ MongoDB connection error:", err);
+        console.error("❌ MongoDB napaka:", err);
     }
 }
 run().catch(console.dir);
@@ -78,7 +79,7 @@ app.post(`${proxy}/register`, async (req, res) => {
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
 
-        await db.collection('users').insertOne({ email, password });
+        await db.collection('users').insertOne({ email, password, login2f: false, phoneId: "" });
         req.session.email = email;
         res.status(201).json({ message: 'Uporabnik uspešno registriran' });
     } catch (err) {
@@ -143,8 +144,32 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
 
 });
 
+app.get(`/wisfi`, (req, res) => {
+    res.redirect('/');
+});
+
+app.get(`${proxy}/d`, (req, res) => {
+    const filePath = path.join(__dirname, 'files', 'app-debug.apk');
+    if (fs.existsSync(filePath)) {
+        res.download(filePath, 'app-debug.apk');
+    } else {
+        res.status(404).send('Datoteka ne obstaja');
+    }
+});
+
+app.get(`${proxy}/nastavitve`, (req, res) => {
+    if (req.session?.email) {
+        console.log('Prijavljen:', req.session.email);
+               res.render('nastavitve');
+
+    } else {
+        console.log('Neprijavljen obiskovalec');
+        res.redirect('/');
+    }
+});
+
 app.listen(port, () => {
-    console.log(`🌐 HTTP strežnik na http://localhost:${port}`);
+    console.log(`🌐 HTTP na portu ${port}`);
 });
 
 // ────────────────────────── MQTT ───────────────────────────────────────
@@ -152,18 +177,16 @@ const mqttPort = 1883;
 const mqttServer = net.createServer(aedes.handle);
 let clients = [];
 
-
 aedes.authorizeSubscribe = function (client, sub, callback) {
     if (sub.topic === 'imageRegister') {
-        return callback(new Error('Nimate dovoljenja za branje (subscribe) tem.'));
+        return callback(new Error('Nimate dovoljenja za branje te teme.'));
     } else {
         return callback(null, sub);
     }
-
 };
 
 mqttServer.listen(mqttPort, () => {
-    console.log(`🚀 MQTT strežnik (aedes) pripravljen na portu ${mqttPort}`);
+    console.log(`🚀 MQTT na portu ${mqttPort}`);
 });
 
 aedes.on('client', (client) => {
@@ -199,6 +222,21 @@ aedes.on('publish', (packet, client) => {
             if (err) console.error('❌ Napaka pri test2.jpg:', err);
             else console.log('✅ Slika uspešno shranjena kot test2.jpg');
         });
+    }
+
+
+    if (packet.topic === 'register') {
+        console.log('prijava:', packet.payload.toString());
+        const { username, password } = JSON.parse(packet.payload.toString());
+        console.log(username, password);
+        clients[clientId] = username
+        aedes.publish({
+            topic: username,
+            payload: Buffer.from('Prijava uspešna'),
+            qos: 0,
+            retain: false
+        });
+
     }
 
     if (packet.topic === 'login') {
