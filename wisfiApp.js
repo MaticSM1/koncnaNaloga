@@ -150,12 +150,16 @@ app.listen(port, () => {
 // ────────────────────────── MQTT ───────────────────────────────────────
 const mqttPort = 1883;
 const mqttServer = net.createServer(aedes.handle);
+let clients = [];
+
 
 aedes.authorizeSubscribe = function (client, sub, callback) {
-    if (sub.topic === 'test') {
+    if (sub.topic === 'imageRegister') {
+        return callback(new Error('Nimate dovoljenja za branje (subscribe) tem.'));
+    } else {
         return callback(null, sub);
     }
-    return callback(new Error('Nimate dovoljenja za branje (subscribe) tem.'));
+
 };
 
 mqttServer.listen(mqttPort, () => {
@@ -198,9 +202,16 @@ aedes.on('publish', (packet, client) => {
     }
 
     if (packet.topic === 'login') {
-console.log('prijava:', packet.payload.toString());
-        const { email, password } = JSON.parse(packet.payload.toString());
-        console.log(email, password);
+        console.log('prijava:', packet.payload.toString());
+        const { username, password } = JSON.parse(packet.payload.toString());
+        console.log(username, password);
+        clients[clientId] = username
+        aedes.publish({
+            topic: username,
+            payload: Buffer.from('ok'),
+            qos: 0,
+            retain: false
+        });
 
     }
 
