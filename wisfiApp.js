@@ -313,14 +313,14 @@ aedes.on('publish', (packet, client) => {
                 if (user) {
                     clients[clientId] = username
                     aedes.publish({
-                        topic: user.email,
+                        topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
                         qos: 0,
                         retain: false
                     });
                 } else {
                     aedes.publish({
-                        topic: 'UUID',
+                        topic: UUID.substring(0, 5),
                         payload: Buffer.from('UUID ne obstaja'),
                         qos: 0,
                         retain: false
@@ -329,7 +329,7 @@ aedes.on('publish', (packet, client) => {
             } catch (err) {
                 console.error('Napaka pri preverjanju UUID:', err);
                 aedes.publish({
-                    topic: 'UUID',
+                    topic: UUID.substring(0, 5),
                     payload: Buffer.from('Napaka pri preverjanju UUID'),
                     qos: 0,
                     retain: false
