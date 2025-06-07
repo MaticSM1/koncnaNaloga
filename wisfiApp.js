@@ -131,7 +131,7 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
             await jager.getProductCode(id);
             const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
             return res.render('izdelek', { data });
-        // res.render('nalaganjeIzdelka');
+            // res.render('nalaganjeIzdelka');
 
         }
         const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
@@ -147,10 +147,16 @@ app.listen(port, () => {
     console.log(`🌐 HTTP strežnik na http://localhost:${port}`);
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MQTT z Aedes
+// ────────────────────────── MQTT ───────────────────────────────────────
 const mqttPort = 1883;
 const mqttServer = net.createServer(aedes.handle);
+
+aedes.authorizeSubscribe = function (client, sub, callback) {
+    if (sub.topic === 'test') {
+        return callback(null, sub);
+    }
+    return callback(new Error('Nimate dovoljenja za branje (subscribe) tem.'));
+};
 
 mqttServer.listen(mqttPort, () => {
     console.log(`🚀 MQTT strežnik (aedes) pripravljen na portu ${mqttPort}`);
@@ -160,14 +166,28 @@ aedes.on('client', (client) => {
     console.log('📡 Odjemalec povezan:', client?.id || 'neznano');
 });
 
+
+const orvInputDir = path.join(__dirname, 'sites/public/data');
+let trenutnaRegistracija = {
+    id: "",
+    timestamp: Date.now(),
+    slike: 0,
+    status: ""
+}
+
 aedes.on('publish', (packet, client) => {
+
     if (!packet.topic || packet.topic.startsWith('$SYS')) return;
 
     console.log('📨 Objavljeno:', packet.topic);
     console.log('🧪 Buffer:', Buffer.isBuffer(packet.payload));
     console.log('🔢 Velikost:', packet.payload.length);
 
+    const clientId = client ? client.id : 'neznano';
+    console.log('👤 Objavil clientId:', clientId);
+
     const dataDir = path.join(__dirname, 'sites/public/data');
+
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
     if (packet.topic === 'images2') {
@@ -175,5 +195,29 @@ aedes.on('publish', (packet, client) => {
             if (err) console.error('❌ Napaka pri test2.jpg:', err);
             else console.log('✅ Slika uspešno shranjena kot test2.jpg');
         });
+    }
+
+    if (packet.topic === 'login') {
+console.log('prijava:', packet.payload.toString());
+        const { email, password } = JSON.parse(packet.payload.toString());
+        console.log(email, password);
+
+    }
+
+    if (packet.topic === 'imageRegister') {
+
+        if (trenutnaRegistracija.id == "") {
+            trenutnaRegistracija.id = clientId;
+        }
+
+        if (clientId == trenutnaRegistracija.id) {
+            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike}.jpg`), packet.payload, err => {
+                if (err) console.error('Napaka pri shranjevanju slike', err);
+                trenutnaRegistracija.slike++;
+            });
+        } else {
+            console.log('Zasedeno');
+        }
+
     }
 });
