@@ -50,7 +50,7 @@ app.set('view engine', 'ejs');
 
 // Routes
 app.get('/', (req, res) => {
-    if (req.session?.email) {
+    if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
     } else {
@@ -159,7 +159,7 @@ app.get(`${proxy}/d`, (req, res) => {
 });
 
 app.get(`${proxy}/nastavitve`, (req, res) => {
-    if (req.session?.email) {
+    if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
         res.render('nastavitve', {}, (err, html) => {
             if (err) {
