@@ -304,7 +304,7 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'UUID') {
         console.log('UUID:', packet.payload.toString());
-        const { UUID } = JSON.parse(packet.payload.toString());
+       const UUID  = packet.payload.toString()
         (async () => {
             try {
               const db = global.client.db('users');
