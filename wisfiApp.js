@@ -201,13 +201,15 @@ aedes.on('client', (client) => {
 });
 
 
-const orvInputDir = path.join(__dirname, 'sites/public/data');
+
+
+const orvInputDir = path.join(__dirname, 'orv/input');
 let trenutnaRegistracija = {
     id: "",
     timestamp: Date.now(),
     slike: 0,
     status: ""
-}
+};
 
 aedes.on('publish', (packet, client) => {
 
@@ -303,7 +305,9 @@ aedes.on('publish', (packet, client) => {
     }
 
     if (packet.topic === 'UUID') {
-        const { UUID } = JSON.parse(packet.payload.toString());
+        console.log('UUID:', packet.payload.toString());
+       let UUID  = packet.payload.toString()
+       console.log('UUID:', UUID);
         (async () => {
             try {
               const db = global.client.db('users');
@@ -311,14 +315,14 @@ aedes.on('publish', (packet, client) => {
                 if (user) {
                     clients[clientId] = username
                     aedes.publish({
-                        topic: user.email,
+                        topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
                         qos: 0,
                         retain: false
                     });
                 } else {
                     aedes.publish({
-                        topic: 'UUID',
+                        topic: UUID.substring(0, 5),
                         payload: Buffer.from('UUID ne obstaja'),
                         qos: 0,
                         retain: false
@@ -327,7 +331,7 @@ aedes.on('publish', (packet, client) => {
             } catch (err) {
                 console.error('Napaka pri preverjanju UUID:', err);
                 aedes.publish({
-                    topic: 'UUID',
+                    topic: UUID.substring(0, 5),
                     payload: Buffer.from('Napaka pri preverjanju UUID'),
                     qos: 0,
                     retain: false
@@ -336,8 +340,6 @@ aedes.on('publish', (packet, client) => {
         })();
     }
 
-
-
     if (packet.topic === 'imageRegister') {
 
         if (trenutnaRegistracija.id == "") {
@@ -345,10 +347,11 @@ aedes.on('publish', (packet, client) => {
         }
 
         if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
-            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike}.jpg`), packet.payload, err => {
+            trenutnaRegistracija.slike++;
+            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike - 1}.jpg`), packet.payload, err => {
                 if (err) console.error('Napaka pri shranjevanju slike', err);
-                trenutnaRegistracija.slike++;
             });
+            console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
         } else {
             console.log('Zasedeno');
         }
