@@ -40,6 +40,7 @@ class MyApplication : Application() {
             editor.putString("port", defaultPort)
             defaultPort
         }
+        val uuid = setUUID()
 
         editor.apply()
         try {
@@ -51,6 +52,7 @@ class MyApplication : Application() {
                 .buildBlocking()
 
             mqttClient.connect()
+            sendMessage("UUID", uuid)
             Toast.makeText(this, "Povezava uspešna", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
