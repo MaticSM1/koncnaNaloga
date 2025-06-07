@@ -7,22 +7,73 @@
     android:layout_height="match_parent"
     tools:context=".Settings">
 
+    <Button
+        android:id="@+id/server"
+        android:layout_width="128dp"
+        android:layout_height="66dp"
+        android:text="default server"
+        app:layout_constraintBottom_toTopOf="@+id/textView"
+        app:layout_constraintEnd_toStartOf="@+id/local"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/textView4"
+        android:layout_width="135dp"
+        android:layout_height="58dp"
+        android:text="Vpisi naslov serverja"
+        app:layout_constraintBottom_toTopOf="@+id/server"
+        app:layout_constraintEnd_toStartOf="@+id/MqqtAddr"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/MqqtAddr"
+        android:layout_width="253dp"
+        android:layout_height="58dp"
+        android:hint="Vnesi naslov (npr. 193.95.229.123:1883)"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/local"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/textView4"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="209dp"
+        android:layout_height="74dp"
+        android:layout_marginBottom="84dp"
+        android:text="Check connection with server"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ping"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Button
         android:id="@+id/ping"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
+        android:layout_width="154dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="84dp"
         android:text="ping"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/textView" />
+
+    <Button
+        android:id="@+id/local"
+        android:layout_width="124dp"
+        android:layout_height="69dp"
+        android:text="local"
+        app:layout_constraintBottom_toTopOf="@+id/ping"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/server"
+        app:layout_constraintTop_toBottomOf="@+id/MqqtAddr" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

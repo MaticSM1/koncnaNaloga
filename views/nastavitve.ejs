@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="sl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastavitve - Kaj je v hrani</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .settings-header h1 {
+            font-size: 2.5rem;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            color: #2E7D32;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        .setting-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            background-color: #3e8e41;
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background-color: transparent;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+
+        .action-button.secondary:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .action-button.danger {
+            background-color: #f44336;
+        }
+
+        .action-button.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .qr-code-section {
+            text-align: center;
+            padding: 2rem 0;
+            display: none;
+        }
+
+        .qr-code-section.active {
+            display: block;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            margin: 1rem auto;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #666;
+            border: 2px dashed #ccc;
+        }
+
+        .verification-code {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .verification-code input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .verification-code input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: #e8f5e8;
+            color: #2E7D32;
+        }
+
+        .status-inactive {
+            background-color: #ffeaa7;
+            color: #e17055;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .settings-header h1 {
+                font-size: 2rem;
+            }
+
+            .card-content {
+                padding: 1.5rem;
+            }
+
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .verification-code {
+                flex-wrap: wrap;
+            }
+
+            .verification-code input {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">🍎</span>
+                    <span>Kaj je v hrani</span>
+                </a>
+                <div class="nav-links">
+                    <a href="search.html">Iskanje</a>
+                    <a href="settings.html">Nastavitve</a>
+                    <a href="#" onclick="logout()">Odjava</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="settings-header">
+                <h1>Nastavitve računa</h1>
+                <p>Upravljajte z varnostjo in nastavitvami svojega računa</p>
+            </div>
+
+            <div class="settings-card">
+                <div class="card-header">
+                    <h3>🔒 Varnost</h3>
+                    <p>Zaščitite svoj račun z dodatnimi varnostnimi ukrepi</p>
+                </div>
+                <div class="card-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Dvofaktorska avtentifikacija (2FA)</h4>
+                            <p>Dodatna plast varnosti za vaš račun</p>
+                            <span class="status-badge status-inactive" id="2fa-status">Neaktivno</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="2fa-toggle" onchange="toggle2FA()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="qr-code-section" id="qr-section">
+                        <h4 style="margin-bottom: 1rem;">Prenesi aplikacijo</h4>
+                        <p style="margin-bottom: 1rem;">Skenirajte QR kodo da prenesete aplikacijo na vaš telfon</p>
+
+                        <div class="qr-placeholder">
+                            <img src="/wisfi/public/qr.png" alt="QR koda za 2FA"
+                                style="width: 180px; height: 180px; object-fit: contain;">
+                        </div>
+
+
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Sprememba gesla</h4>
+                                <p>Zadnja sprememba: 15. maj 2024</p>
+                            </div>
+                            <button class="action-button secondary" onclick="changePassword()">Spremeni</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3>⚙️ Splošno</h3>
+                        <p>Prilagodite svojo izkušnjo uporabe</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>E-poštna obvestila</h4>
+                                <p>Prejemajte obvestila o novih funkcijah</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Temni način</h4>
+                                <p>Prilagodite videz aplikacije</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h3>👤 Račun</h3>
+                        <p>Upravljanje vašega uporabniškega računa</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Izvoz podatkov</h4>
+                                <p>Prenesite vse svoje podatke</p>
+                            </div>
+                            <button class="action-button secondary">Izvozi</button>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Brisanje računa</h4>
+                                <p>Trajno izbriši svoj račun in vse podatke</p>
+                            </div>
+                            <button class="action-button danger">Izbriši račun</button>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Odjava</h4>
+                                <p>Odjavite se iz svoje seje</p>
+                            </div>
+                            <button class="action-button" onclick="logout()">Odjavi se</button>
+                        </div>
+                    </div>
+                </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Kaj je v hrani. Vse pravice pridržane.</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggle2FA() {
+            const toggle = document.getElementById('2fa-toggle');
+            const qrSection = document.getElementById('qr-section');
+            const status = document.getElementById('2fa-status');
+
+            if (toggle.checked) {
+                qrSection.classList.add('active');
+                status.textContent = 'Nastavitev...';
+                status.className = 'status-badge status-inactive';
+            } else {
+                qrSection.classList.remove('active');
+                status.textContent = 'Neaktivno';
+                status.className = 'status-badge status-inactive';
+            }
+        }
+
+
+
+
+        function logout() {
+            if (confirm('Ali se res želite odjaviti?')) {
+                alert('Uspešno ste se odjavili!');
+                window.location.href = 'login.html';
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

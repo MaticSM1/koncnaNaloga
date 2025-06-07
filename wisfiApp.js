@@ -6,6 +6,8 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jagerLinux');
 const fs = require('fs');
 const path = require('path');
+const { render } = require('ejs');
+const { exec } = require('child_process');
 require('dotenv').config();
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 
@@ -23,14 +25,15 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+global.client = client;
 
 async function run() {
     try {
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB connected!");
+        console.log("✅ MongoDB povezan");
     } catch (err) {
-        console.error("❌ MongoDB connection error:", err);
+        console.error("❌ MongoDB napaka:", err);
     }
 }
 run().catch(console.dir);
@@ -46,9 +49,14 @@ app.use(session({
 app.use(`${proxy}/public`, express.static(__dirname + '/sites/public'));
 app.set('view engine', 'ejs');
 
+//zacasno za razvoj 
+app.use(`${proxy}/orvinput`, express.static(__dirname + '/orv/input'));
+
+
 // Routes
 app.get('/', (req, res) => {
-    if (req.session?.email) {
+    console.log(req.session.email);
+    if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
     } else {
@@ -74,11 +82,11 @@ app.post(`${proxy}/register`, async (req, res) => {
     if (!email || !password) return res.status(400).json({ message: 'Email in geslo sta obvezna' });
 
     try {
-        const db = client.db('users');
+        const db = global.client.db('users');
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
 
-        await db.collection('users').insertOne({ email, password });
+        await db.collection('users').insertOne({ email, password, login2f: false, phoneId: "" });
         req.session.email = email;
         res.status(201).json({ message: 'Uporabnik uspešno registriran' });
     } catch (err) {
@@ -90,7 +98,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 app.post(`${proxy}/login`, async (req, res) => {
     const { email, password } = req.body;
     try {
-        const db = client.db('users');
+        const db = global.client.db('users');
         const user = await db.collection('users').findOne({ email });
         if (user && user.password === password) {
             req.session.email = email;
@@ -143,23 +151,69 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
 
 });
 
+app.get(`/wisfi`, (req, res) => {
+    res.redirect('/');
+});
+
+app.get(`${proxy}/run`, (req, res) => {
+    exec('python3 script.py', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`zagonu skripte: ${error.message}`);
+            return res.status(500).send('Napaka pri zagonu skripte');
+        }
+        if (stderr) {
+            console.error(`Napaka v skripti: ${stderr}`);
+        }
+        res.send(`Rezultat skripte: ${stdout}`);
+    });
+});
+
+
+
+app.get(`${proxy}/d`, (req, res) => {
+    const filePath = path.join(__dirname, 'files', 'app-debug.apk');
+    if (fs.existsSync(filePath)) {
+        res.download(filePath, 'app-debug.apk');
+    } else {
+        res.status(404).send('Datoteka ne obstaja');
+    }
+});
+
+app.get(`${proxy}/nastavitve`, (req, res) => {
+    if (req.session.email) {
+        console.log('Prijavljen:', req.session.email);
+        res.render('nastavitve', {}, (err, html) => {
+            if (err) {
+                console.error('Napka nastavitve:', err);
+                return res.status(500).send('Napaka pri nalaganju strani');
+            }
+            res.send(html);
+        });
+    } else {
+        console.log('Neprijavljen obiskovalec');
+        res.redirect('/');
+    }
+});
+
 app.listen(port, () => {
-    console.log(`🌐 HTTP strežnik na http://localhost:${port}`);
+    console.log(`🌐 HTTP na portu ${port}`);
 });
 
 // ────────────────────────── MQTT ───────────────────────────────────────
 const mqttPort = 1883;
 const mqttServer = net.createServer(aedes.handle);
+let clients = [];
 
 aedes.authorizeSubscribe = function (client, sub, callback) {
-    if (sub.topic === 'test') {
+    if (sub.topic === 'imageRegister') {
+        return callback(new Error('Nimate dovoljenja za branje te teme.'));
+    } else {
         return callback(null, sub);
     }
-    return callback(new Error('Nimate dovoljenja za branje (subscribe) tem.'));
 };
 
 mqttServer.listen(mqttPort, () => {
-    console.log(`🚀 MQTT strežnik (aedes) pripravljen na portu ${mqttPort}`);
+    console.log(`🚀 MQTT na portu ${mqttPort}`);
 });
 
 aedes.on('client', (client) => {
@@ -167,13 +221,16 @@ aedes.on('client', (client) => {
 });
 
 
-const orvInputDir = path.join(__dirname, 'sites/public/data');
+
+
+
+const orvInputDir = path.join(__dirname, 'orv/input');
 let trenutnaRegistracija = {
     id: "",
     timestamp: Date.now(),
     slike: 0,
     status: ""
-}
+};
 
 aedes.on('publish', (packet, client) => {
 
@@ -197,27 +254,125 @@ aedes.on('publish', (packet, client) => {
         });
     }
 
-    if (packet.topic === 'login') {
-console.log('prijava:', packet.payload.toString());
-        const { email, password } = JSON.parse(packet.payload.toString());
-        console.log(email, password);
 
+    if (packet.topic === 'register') {
+        const { username, password, UUID } = JSON.parse(packet.payload.toString());
+        (async () => {
+            try {
+                const db = global.client.db('users');
+                const existingUser = await db.collection('users').findOne({ email: username });
+                if (existingUser) {
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('Email že obstaja'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
+                    clients[clientId] = username;
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri registraciji:', err);
+                aedes.publish({
+                    topic: username,
+                    payload: Buffer.from('Napaka pri registraciji'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
+    }
+
+    if (packet.topic === 'login') {
+        console.log('prijava:', packet.payload.toString());
+        const { username, password } = JSON.parse(packet.payload.toString());
+        (async () => {
+            try {
+                const db = global.client.db('users');
+                const user = await db.collection('users').findOne({ email: username });
+                if (user && user.password === password) {
+                    clients[clientId] = username
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    aedes.publish({
+                        topic: username,
+                        payload: Buffer.from('Napačni podatki za prijavo'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri prijavi:', err);
+                aedes.publish({
+                    topic: username,
+                    payload: Buffer.from('Napaka pri prijavi'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
+    }
+
+    if (packet.topic === 'UUID') {
+        console.log('UUID:', packet.payload.toString());
+        let UUID = packet.payload.toString()
+        console.log('UUID:', UUID);
+        (async () => {
+            try {
+                const db = global.client.db('users');
+                const user = await db.collection('users').findOne({ phoneId: UUID });
+                if (user) {
+                    clients[clientId] = username
+                    aedes.publish({
+                        topic: UUID.substring(0, 5),
+                        payload: Buffer.from('ok'),
+                        qos: 0,
+                        retain: false
+                    });
+                } else {
+                    aedes.publish({
+                        topic: UUID.substring(0, 5),
+                        payload: Buffer.from('UUID ne obstaja'),
+                        qos: 0,
+                        retain: false
+                    });
+                }
+            } catch (err) {
+                console.error('Napaka pri preverjanju UUID:', err);
+                aedes.publish({
+                    topic: UUID.substring(0, 5),
+                    payload: Buffer.from('Napaka pri preverjanju UUID'),
+                    qos: 0,
+                    retain: false
+                });
+            }
+        })();
     }
 
     if (packet.topic === 'imageRegister') {
-
         if (trenutnaRegistracija.id == "") {
             trenutnaRegistracija.id = clientId;
         }
-
         if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
-            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike}.jpg`), packet.payload, err => {
+            trenutnaRegistracija.slike++;
+            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike - 1}.jpg`), packet.payload, err => {
                 if (err) console.error('Napaka pri shranjevanju slike', err);
-                trenutnaRegistracija.slike++;
             });
+            console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
         } else {
             console.log('Zasedeno');
         }
-
     }
 });

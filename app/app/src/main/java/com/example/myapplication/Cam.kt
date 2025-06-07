@@ -9,7 +9,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -32,14 +31,18 @@ class Cam : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val intervalMs = 100L
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-    private var once = true
+    private var oldValue :String = ""
     lateinit var app: MyApplication
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCamBinding.inflate(layoutInflater)
         setContentView(binding.root)
         app = application as MyApplication
+        binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+
 
         if (isCameraPermissionGranted()) {
             startCamera()
@@ -107,22 +110,9 @@ class Cam : AppCompatActivity() {
 
     private fun processAndDisplayImage(imagePath: String) {
         val bitmap = BitmapFactory.decodeFile(imagePath)
-        val html = """
-            <html>
-                <body style="background-color:#ffffff;">
-                    <h3 style="text-align:center;">Slika obdelana</h3>
-                    <p style="text-align:center;">Vizualni efekt dodan brez spreminjanja slike.</p>
-                </body>
-            </html>
-        """.trimIndent()
-        binding.webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
 
-        if (once) {
-            sendImage(bitmap)
-            once = false
-        }
+        binding.webView.settings.javaScriptEnabled = true
 
-        // QR skeniranje
         val image = InputImage.fromBitmap(bitmap, 0)
         val scanner = BarcodeScanning.getClient()
 
@@ -133,7 +123,14 @@ class Cam : AppCompatActivity() {
                     if (rawValue != null) {
                         Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
                         Log.d("QR", "Najdeno: $rawValue")
-                        app.sendMessage("QR", barcode.rawValue.toString())
+                        app.sendMessage("QR", rawValue)
+
+                        if (rawValue != oldValue) {
+                            // Naloži URL s številko izdelka samo prvič
+                            binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
+                            oldValue = rawValue
+                        }
+
                         break
                     }
                 }
@@ -141,13 +138,6 @@ class Cam : AppCompatActivity() {
             .addOnFailureListener {
                 Log.e("QR", "Napaka pri branju QR kode: ${it.message}", it)
             }
-    }
-
-    private fun sendImage(bitmap: Bitmap) {
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-        val byteArray = outputStream.toByteArray()
-        app.sendRawBytesMessage("images2", byteArray)
     }
 
     override fun onDestroy() {
