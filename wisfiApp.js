@@ -348,12 +348,11 @@ let trenutnaRegistracija = {
         }
 
         if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
-            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike}.jpg`), packet.payload, err => {
+            trenutnaRegistracija.slike++;
+            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike - 1}.jpg`), packet.payload, err => {
                 if (err) console.error('Napaka pri shranjevanju slike', err);
-               
             });
-             trenutnaRegistracija.slike++;
-             console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
+            console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
         } else {
             console.log('Zasedeno');
         }
