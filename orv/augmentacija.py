@@ -150,24 +150,23 @@ if __name__ == "__main__":
             procesiraj_sliko(pot_do_slike,filename)
 
 
-            #! Razdelitev slik 
+    #! Razdelitev slik 
 
-            all_files = [f for f in os.listdir(outMapa + "all/") if os.path.isfile(os.path.join(outMapa + "all/", f))]
-            random.shuffle(all_files)
-            split_idx = int(0.8 * len(all_files))
-            d80_files = all_files[:split_idx]
-            d20_files = all_files[split_idx:]
+    all_files = [f for f in os.listdir(outMapa + "all/") if os.path.isfile(os.path.join(outMapa + "all/", f))]
+    random.shuffle(all_files)
 
-            for f in d80_files:
-                src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "train/person1/", f)
-                img = cv2.imread(src)
-                if img is not None:
-                    cv2.imwrite(dst, img)
 
-            for f in d20_files:
-                src = os.path.join(outMapa + "all/", f)
-                dst = os.path.join(outMapa + "/test/person1/", f)
-                img = cv2.imread(src)
-                if img is not None:
-                    cv2.imwrite(dst, img)
+    for i in range(len(all_files)):
+        f = all_files[i]
+        if i < len(all_files) * 0.8:
+            src = os.path.join(outMapa + "all/", f)
+            dst = os.path.join(outMapa + "train/person1/", f)
+            img = cv2.imread(src)
+            if img is not None:
+                cv2.imwrite(dst, img)
+        else:
+            src = os.path.join(outMapa + "all/", f)
+            dst = os.path.join(outMapa + "test/person1/", f)
+            img = cv2.imread(src)
+            if img is not None:
+                cv2.imwrite(dst, img)
