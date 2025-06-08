@@ -27,13 +27,18 @@ const ProductSchema = new mongoose.Schema({
         type: Date,
         unique: true,
         sparse: true,
-        default: () => new Date() 
+        default: () => new Date()
     },
     price: {
         type: String,
         unique: true,
         sparse: true
-    }
+    },
+    light: {
+        type: Number,
+        unique: true,
+        sparse: true
+    },
 });
 
 module.exports = mongoose.model('Product', ProductSchema);
