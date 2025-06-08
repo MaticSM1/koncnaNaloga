@@ -26,6 +26,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.shoplist.setOnClickListener {
+            val intent = Intent(this, Shoplist::class.java)
+            startActivity(intent)
+        }
+
         binding.loginButton.setOnClickListener {
             val intent = if (binding.loginButton.text == "LOG IN") {
                 Intent(this, Login::class.java)

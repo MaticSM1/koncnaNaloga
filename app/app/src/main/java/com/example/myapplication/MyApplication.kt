@@ -48,7 +48,6 @@ class MyApplication : Application() {
         val uuid = setUUID()
         editor.apply()
 
-        // Launch on IO thread
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 mqttClient = MqttClient.builder()
