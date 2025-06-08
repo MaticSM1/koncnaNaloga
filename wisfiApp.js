@@ -86,12 +86,12 @@ app.get('/', (req, res) => {
             } else {
                 console.log('Prijavljen2:', req.session.email);
                 res.sendFile(__dirname + '/sites/potrditev.html');
-
             }
-            
+
+        } else {
+            console.log('Prijavljen3:', req.session.email);
+            res.sendFile(__dirname + '/sites/portal.html');
         }
-        console.log('Prijavljen3:', req.session.email);
-        res.sendFile(__dirname + '/sites/portal.html');
     } else {
         console.log('Neprijavljen obiskovalec');
         res.sendFile(__dirname + '/sites/main.html');
