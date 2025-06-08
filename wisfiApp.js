@@ -88,6 +88,7 @@ app.get('/', (req, res) => {
                 res.sendFile(__dirname + '/sites/potrditev.html');
 
             }
+            
         }
         console.log('Prijavljen:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
@@ -299,7 +300,7 @@ app.get(`${proxy}/nastavitve`, (req, res) => {
         });
     } else {
         console.log('Neprijavljen obiskovalec');
-        res.redirect('/');
+        res.redirect(`${proxy}/`);
     }
 });
 app.post(`${proxy}/nastavi2f`, async (req, res) => {
@@ -431,6 +432,7 @@ aedes.on('publish', (packet, client) => {
                         retain: false
                     });
                 } else {
+                    console.log("registracija uspesna")
                     await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
                     clients[clientId] = username;
                     aedes.publish({
@@ -604,7 +606,7 @@ aedes.on('publish', (packet, client) => {
 
         try {
             const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-            console.log(qr, lat, lon,light);
+            console.log(qr, lat, lon, light);
             const newProduct = new Product({
                 qrcode: qr,
                 latitude: lat,
