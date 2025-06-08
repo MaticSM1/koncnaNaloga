@@ -1,92 +1,76 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
-import android.widget.Button
+import android.os.Handler
+import android.os.Looper
+import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import okhttp3.*
-import org.eclipse.paho.android.service.MqttAndroidClient
-import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttToken
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions
-import java.io.IOException
+import androidx.core.widget.addTextChangedListener
+import com.example.myapplication.databinding.ActivitySettingsBinding
 
 class Settings : AppCompatActivity() {
 
-    private val client = OkHttpClient()
-
+    private lateinit var binding: ActivitySettingsBinding
+    lateinit var app: MyApplication
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        app = application as MyApplication
 
-        enableEdgeToEdge()
+        val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val addr = sharedPrefs.getString("addr", "")
+        val port = sharedPrefs.getString("port", "")
+        val server = addr+ ':' + port
+        binding.MqqtAddr.setText(server)
 
-        val pingButton = findViewById<Button>(R.id.ping)
-        pingButton.setOnClickListener {
-            sendPingRequest()
+        fun connectToMqqt(input:String){
+            val server = input.split(':')
+            val addr = server[0];
+            val port = server[1];
+            val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+            sharedPrefs.edit().putString("addr", addr).apply()
+            sharedPrefs.edit().putString("port", port).apply()
+            app.initMqttClient()
         }
 
-        val mqttButton = findViewById<Button>(R.id.mqtt)
-        mqttButton.setOnClickListener {
-            connectToMqttBroker()
+        binding.ping.setOnClickListener {
+            app.initMqttClient()
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-    }
-
-    private fun sendPingRequest() {
-        val request = Request.Builder()
-            .url("http://10.0.2.2:3000/ping")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@Settings, "Ping failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val input = binding.MqqtAddr.text.toString().trim()
+                connectToMqqt(input)
             }
-
-            override fun onResponse(call: Call, response: Response) {
-                runOnUiThread {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@Settings, "Ping success!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this@Settings, "Ping error: ${response.code}", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        })
-    }
-
-    private fun connectToMqttBroker() {
-        val mqttClient = MqttAndroidClient(
-            applicationContext,
-            "tcp://broker.hivemq.com:1883",
-            "AndroidClient" + System.currentTimeMillis()
-        )
-        val options = MqttConnectOptions().apply {
-            isCleanSession = true
         }
 
-        mqttClient.connect(options, null, object : IMqttActionListener {
-            override fun onSuccess(asyncActionToken: IMqttToken?) {
-                runOnUiThread {
-                    Toast.makeText(this@Settings, "Connected to MQTT broker!", Toast.LENGTH_SHORT).show()
-                }
-            }
+        binding.server.setOnClickListener{
+            val server ="193.95.229.123:1883"
+            binding.MqqtAddr.setText(server)
+            connectToMqqt(server)
+        }
 
-            override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-                runOnUiThread {
-                    Toast.makeText(this@Settings, "Failed to connect: ${exception?.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
+        binding.local.setOnClickListener{
+            val local = "10.0.2.2:1883"
+            binding.MqqtAddr.setText(local)
+            connectToMqqt(local)
+        }
+
+        binding.back.setOnClickListener{
+            finish()
+        }
+        binding.logout.setOnClickListener{
+            app.logout()
+            finish()
+        }
+
+        binding.download.setOnClickListener {
+            binding.qr.visibility = View.VISIBLE
+            binding.download.visibility = View.INVISIBLE
+        }
+
     }
 }

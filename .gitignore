@@ -1,3 +1,16 @@
 node_modules/
+sites/public/data/
 .env
+
+orv/logs/data/train/
+orv/logs/data/test/
+orv/logs/trainingData/
+
+orv/data/train/
+orv/data/
+orv/trainingData/
+orv/input/
+
+
+
 

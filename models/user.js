@@ -10,7 +10,14 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    login2f: {
+        type: Boolean,
+    },
+    phoneId: {
+        type: String,
+        sparse: true
+    },
 });
 
 module.exports = mongoose.model('User', UserSchema);

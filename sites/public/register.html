@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registracija - Kaj je v hrani</title>
-    <link rel="stylesheet" href="/public/main.css">
+    <link rel="stylesheet" href="/wisfi/public/main.css">
 </head>
 
 <body>
@@ -17,8 +17,8 @@
                     <span>Kaj je v hrani</span>
                 </a>
                 <div class="nav-links">
-                    <a href="/">Domov</a>
-                    <a href="/public/kontakt.html">Kontakt</a>
+                    <a href="/wisfi/">Domov</a>
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
                 </div>
             </nav>
         </header>
@@ -34,7 +34,7 @@
                     <form class="register-form" onsubmit="handleRegister(event)">
                         <div class="form-group">
                             <label for="email">E-poštni naslov</label>
-                            <input type="email" id="email" name="email" placeholder="vasa@eposta.si" required>
+                            <input type="email" id="email" name="username" placeholder="vasa@eposta.si" required>
                         </div>
 
                         <div class="form-group">
@@ -70,20 +70,20 @@
         function handleRegister(event) {
             event.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            if (email && password) {
-                fetch('/register', {
+            if (username && password) {
+                fetch('/wisfi/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 })
                     .then(response => {
                         if (response.ok) {
-                            window.location.href = '/';
+                            window.location.href = '/wisfi/';
                         } else {
                             return response.json().then(data => {
                                 alert(data.message || 'Registracija ni uspela.');
