@@ -35,3 +35,5 @@ const ProductSchema = new mongoose.Schema({
         sparse: true
     }
 });
+
+module.exports = mongoose.model('Product', ProductSchema);
