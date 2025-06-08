@@ -10,6 +10,7 @@ const { render } = require('ejs');
 const { exec } = require('child_process');
 const e = require('express');
 require('dotenv').config();
+const product = require('./models/product.js');
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
@@ -566,8 +567,24 @@ aedes.on('publish', (packet, client) => {
 
     }
 
-    if (packet.topic === 'QR') {
-   
-    }
+
+if (packet.topic === 'QR') {
+  try {
+    const { qrcode, latitude, longitude } = JSON.parse(packet.payload.toString());
+
+    const newProduct = new Product({
+      qrcode,
+      latitude,
+      longitude,
+    });
+
+    newProduct.save()
+      .then(() => console.log('Product saved:', newProduct))
+      .catch(err => console.error('Error saving product:', err));
+  } catch (err) {
+    console.error('Failed to parse packet payload:', err);
+  }
+}
+
 
 });
