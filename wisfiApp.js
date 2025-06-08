@@ -15,9 +15,6 @@ const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
 
-
-
-
 const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "";
@@ -569,13 +566,14 @@ aedes.on('publish', (packet, client) => {
 
 
 if (packet.topic === 'QR') {
+    
  try {
       const { qr, lat, lon } = JSON.parse(packet.payload.toString());
     console.log( qr, lat, lon);
     const newProduct = new Product({
-      qr,
-      lat,
-      lon,
+        qrcode: qr,
+        latitude: lat,
+        longitude: lon,
     });
 
     newProduct.save()
