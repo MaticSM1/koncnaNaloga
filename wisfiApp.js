@@ -112,12 +112,12 @@ app.get(`${proxy}/logout`, (req, res) => {
 app.post(`${proxy}/register`, async (req, res) => {
     const { username, password } = req.body;
 
-    if (!username || !password) 
+    if (!username || !password)
         return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
 
     try {
         const existingUser = await User.findOne({ username });
-        if (existingUser) 
+        if (existingUser)
             return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
 
         const hashedPassword = await bcrypt.hash(password, 10); // 10 je "salt rounds"
@@ -147,7 +147,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 app.post(`${proxy}/login`, async (req, res) => {
     const { username, password } = req.body;
 
-    if (!username || !password) 
+    if (!username || !password)
         return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
 
     try {
@@ -600,23 +600,23 @@ aedes.on('publish', (packet, client) => {
     }
 
 
-if (packet.topic === 'QR') {
-    
- try {
-      const { qr, lat, lon } = JSON.parse(packet.payload.toString());
-    console.log( qr, lat, lon);
-    const newProduct = new Product({
-        qrcode: qr,
-        latitude: lat,
-        longitude: lon,
-    });
+    if (packet.topic === 'QR') {
 
-    newProduct.save()
-      .then(() => console.log('Product saved:', newProduct))
-      .catch(err => console.error('Error saving product:', err));
-  } catch (err) {
-    console.error('Failed to parse packet payload:', err);
-  }
-}
+        try {
+            const { qr, lat, lon } = JSON.parse(packet.payload.toString());
+            console.log(qr, lat, lon);
+            const newProduct = new Product({
+                qrcode: qr,
+                latitude: lat,
+                longitude: lon,
+            });
+
+            newProduct.save()
+                .then(() => console.log('Product saved:', newProduct))
+                .catch(err => console.error('Error saving product:', err));
+        } catch (err) {
+            console.error('Failed to parse packet payload:', err);
+        }
+    }
 
 });
