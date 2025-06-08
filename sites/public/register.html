@@ -70,16 +70,16 @@
         function handleRegister(event) {
             event.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            if (email && password) {
+            if (username && password) {
                 fetch('/wisfi/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 })
                     .then(response => {
                         if (response.ok) {
