@@ -131,7 +131,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 
         await newUser.save();
 
-        req.session.username = username;
+        req.session.email = username;
         req.session.login2f = newUser.login2f;
         req.session.login2fPotrditev = false;
 
@@ -162,7 +162,7 @@ app.post(`${proxy}/login`, async (req, res) => {
             return res.status(401).json({ message: 'Napačni podatki za prijavo' });
         }
 
-        req.session.username = username;
+        req.session.email = username;
         req.session.login2f = user.login2f;
         req.session.login2fPotrditev = false;
 
