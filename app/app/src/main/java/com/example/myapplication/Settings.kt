@@ -1,59 +1,67 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import com.example.myapplication.databinding.ActivitySettingsBinding
-import com.hivemq.client.mqtt.MqttClient
-import com.hivemq.client.mqtt.datatypes.MqttQos
-import java.nio.charset.StandardCharsets
 
 class Settings : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
-
-    private val TAG = "SettingsMQTT"
-
+    lateinit var app: MyApplication
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        app = application as MyApplication
+
+        val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val addr = sharedPrefs.getString("addr", "")
+        val port = sharedPrefs.getString("port", "")
+        val server = addr+ ':' + port
+        binding.MqqtAddr.setText(server)
+
+        fun connectToMqqt(input:String){
+            val server = input.split(':')
+            val addr = server[0];
+            val port = server[1];
+            val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+            sharedPrefs.edit().putString("addr", addr).apply()
+            sharedPrefs.edit().putString("port", port).apply()
+            app.initMqttClient()
+        }
 
         binding.ping.setOnClickListener {
-            connectAndPing()
+            Toast.makeText(this, "Ping poslan iz Settings", Toast.LENGTH_SHORT).show()
         }
-    }
 
-    private fun connectAndPing() {
-        val client = MqttClient.builder()
-            .useMqttVersion3()
-            .serverHost("193.95.229.123")
-            .serverPort(1883)
-            .identifier("android-client-${System.currentTimeMillis()}")
-            .buildBlocking()
+//        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
+//            if (!hasFocus) {
+//                val input = binding.MqqtAddr.text.toString().trim()
+//                connectToMqqt(input)
+//            }
+//        }
 
+        binding.server.setOnClickListener{
+            val server ="193.95.229.123:1883"
+            binding.MqqtAddr.setText(server)
+            connectToMqqt(server)
+        }
 
-        try {
-            Log.d(TAG, "Poskušam se povezati na MQTT broker...")
-            client.connect()
+        binding.local.setOnClickListener{
+            val local = "10.0.2.2:1883"
+            binding.MqqtAddr.setText(local)
+            connectToMqqt(local)
+        }
 
-            Log.d(TAG, "Povezava uspešna.")
-            Log.d(TAG, "Pošiljam sporočilo 'ping' na test/ping...")
-            client.publishWith()
-                .topic("test/ping")
-                .qos(MqttQos.AT_LEAST_ONCE)
-                .payload("ping".toByteArray(StandardCharsets.UTF_8))
-                .send()
-            Log.d(TAG, "Sporočilo poslano.")
-
-            Toast.makeText(this, "Ping objavljen (HiveMQ)", Toast.LENGTH_SHORT).show()
-
-            client.disconnect()
-            Log.d(TAG, "Odklopljen od MQTT brokerja.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Napaka pri povezavi ali pošiljanju: ${e.message}", e)
-            Toast.makeText(this, "Napaka pri povezavi: ${e.message}", Toast.LENGTH_LONG).show()
+        binding.back.setOnClickListener{
+            finish()
+        }
+        binding.logout.setOnClickListener{
+            app.logout()
+            finish()
         }
     }
 }

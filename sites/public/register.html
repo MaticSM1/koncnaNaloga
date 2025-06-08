@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registracija - Kaj je v hrani</title>
+    <link rel="stylesheet" href="/wisfi/public/main.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <a href="#" class="logo">
+                    <span class="logo-icon">🍎</span>
+                    <span>Kaj je v hrani</span>
+                </a>
+                <div class="nav-links">
+                    <a href="/wisfi/">Domov</a>
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <section class="register-section">
+                <div class="register-container">
+                    <div class="register-header">
+                        <h1>Registracija</h1>
+                        <p>Ustvarite nov račun</p>
+                    </div>
+
+                    <form class="register-form" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="email">E-poštni naslov</label>
+                            <input type="email" id="email" name="email" placeholder="vasa@eposta.si" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Geslo</label>
+                            <input type="password" id="password" name="password" placeholder="Vnesite geslo" required>
+                        </div>
+
+                        <button type="submit" class="register-button">Registrirajte se</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-links">
+                <a href="#">O nas</a>
+                <a href="#">Pogoji uporabe</a>
+                <a href="#">Zasebnost</a>
+                <a href="#">Pomoč</a>
+            </div>
+
+            <div class="social-icons">
+                <a href="#" class="social-icon">📘</a>
+                <a href="#" class="social-icon">📷</a>
+                <a href="#" class="social-icon">🐦</a>
+            </div>
+
+            <p>&copy; 2025 Kaj je v hrani. Vse pravice pridržane.</p>
+        </footer>
+    </div>
+
+    <script>
+        function handleRegister(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (email && password) {
+                fetch('/wisfi/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/wisfi/';
+                        } else {
+                            return response.json().then(data => {
+                                alert(data.message || 'Registracija ni uspela.');
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        alert('Prišlo je do napake pri povezavi s strežnikom.');
+                    });
+            } else {
+                alert('Prosimo, izpolnite vsa polja.');
+            }
+        }
+    </script>
+</body>
+
+</html>

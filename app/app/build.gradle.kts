@@ -7,6 +7,13 @@ android {
     namespace = "com.example.myapplication"
     compileSdk = 35
 
+    packaging {
+        resources {
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.myapplication"
         minSdk = 24
@@ -47,11 +54,18 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.extensions)
+    implementation (libs.play.services.location)
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation(libs.org.eclipse.paho.client.mqttv3)
+    implementation(libs.org.eclipse.paho.android.service)
+
+    implementation (libs.hivemq.mqtt.client)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -65,4 +79,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }
