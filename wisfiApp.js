@@ -127,7 +127,7 @@ app.post(`${proxy}/register`, async (req, res) => {
 
         await newUser.save();
 
-        req.session.username = username;
+        req.session.email = username;
         req.session.login2f = newUser.login2f;
         req.session.login2fPotrditev = false;
 
@@ -149,7 +149,7 @@ app.post(`${proxy}/login`, async (req, res) => {
         const user = await User.findOne({ username });
 
         if (user && user.password === password) {
-            req.session.username = username;
+            req.session.email = username;
             req.session.login2f = user.login2f;
             req.session.login2fPotrditev = false;
 
