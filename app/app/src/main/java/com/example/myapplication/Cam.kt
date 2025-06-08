@@ -190,7 +190,6 @@ class Cam : AppCompatActivity() {
                         Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
                         Log.d("QR", "Najdeno: $rawValue")
 
-                        // Zgradi JSON z lokacijo in QR kodo
                         val json = JSONObject().apply {
                             put("qr", rawValue)
                             put("lat", latitude ?: "ni na voljo")
