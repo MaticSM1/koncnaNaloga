@@ -12,7 +12,6 @@ const ProductSchema = new mongoose.Schema({
     qrcode: {
         type: String,
         required: true,
-        unique: true,
         trim: true
     },
     latitude: {
@@ -25,18 +24,15 @@ const ProductSchema = new mongoose.Schema({
     },
     time: {
         type: Date,
-        unique: true,
         sparse: true,
         default: () => new Date()
     },
     price: {
         type: String,
-        unique: true,
         sparse: true
     },
     light: {
         type: Number,
-        unique: true,
         sparse: true
     },
 });
