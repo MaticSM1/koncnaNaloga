@@ -3,6 +3,10 @@ package com.example.myapplication
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
@@ -36,9 +40,12 @@ class Cam : AppCompatActivity() {
     lateinit var app: MyApplication
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    // Shranjevanje lokacije
+    // Lokacija
     private var latitude: Double? = null
     private var longitude: Double? = null
+
+    // Svetloba
+    private var lightLevel: Float? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +57,23 @@ class Cam : AppCompatActivity() {
         binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         binding.webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
 
+        // Svetlobni senzor
+        val sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        if (lightSensor != null) {
+            val lightListener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    lightLevel = event?.values?.get(0)
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            }
+            sensorManager.registerListener(lightListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        } else {
+            Toast.makeText(this, "Senzor svetlobe ni na voljo", Toast.LENGTH_SHORT).show()
+        }
+
+        // Dovoljenja
         if (isCameraPermissionGranted()) {
             startCamera()
         } else {
@@ -194,6 +218,7 @@ class Cam : AppCompatActivity() {
                             put("qr", rawValue)
                             put("lat", latitude ?: "ni na voljo")
                             put("lon", longitude ?: "ni na voljo")
+                            put("light", lightLevel ?: "ni na voljo")
                         }
 
                         app.sendMessage("QR", json.toString())
