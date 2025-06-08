@@ -81,16 +81,16 @@ app.get('/', (req, res) => {
             }
 
             if (req.session.login2fPotrditev) {
-                console.log('Prijavljen:', req.session.email);
+                console.log('Prijavljen1:', req.session.email);
                 res.sendFile(__dirname + '/sites/portal.html');
             } else {
-                console.log('Prijavljen:', req.session.email);
+                console.log('Prijavljen2:', req.session.email);
                 res.sendFile(__dirname + '/sites/potrditev.html');
 
             }
             
         }
-        console.log('Prijavljen:', req.session.email);
+        console.log('Prijavljen3:', req.session.email);
         res.sendFile(__dirname + '/sites/portal.html');
     } else {
         console.log('Neprijavljen obiskovalec');
@@ -300,7 +300,7 @@ app.get(`${proxy}/nastavitve`, (req, res) => {
         });
     } else {
         console.log('Neprijavljen obiskovalec');
-        res.redirect(`${proxy}/`);
+        res.redirect(`/${proxy}/`);
     }
 });
 app.post(`${proxy}/nastavi2f`, async (req, res) => {
