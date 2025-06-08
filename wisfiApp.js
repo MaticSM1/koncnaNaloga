@@ -10,7 +10,7 @@ const { render } = require('ejs');
 const { exec } = require('child_process');
 const e = require('express');
 require('dotenv').config();
-const product = require('./models/product.js');
+const Product = require('./models/product.js');
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
