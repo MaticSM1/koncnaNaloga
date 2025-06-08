@@ -11,6 +11,10 @@ import com.hivemq.client.mqtt.MqttClientState
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient
 import com.hivemq.client.mqtt.datatypes.MqttQos
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -25,6 +29,7 @@ class MyApplication : Application() {
 
 
         initMqttClient()
+
     }
 
     fun initMqttClient() {
@@ -41,24 +46,34 @@ class MyApplication : Application() {
             defaultPort
         }
         val uuid = setUUID()
-
         editor.apply()
-        try {
-            mqttClient = MqttClient.builder()
-                .useMqttVersion3()
-                .serverHost(addr)
-                .serverPort(port.toInt())
-                .identifier("android-client-${System.currentTimeMillis()}")
-                .buildBlocking()
 
-            mqttClient.connect()
-            sendMessage("UUID", uuid)
-            Toast.makeText(this, "Povezava uspešna", Toast.LENGTH_SHORT).show()
+        // Launch on IO thread
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                mqttClient = MqttClient.builder()
+                    .useMqttVersion3()
+                    .serverHost(addr)
+                    .serverPort(port.toInt())
+                    .identifier("android-client-${System.currentTimeMillis()}")
+                    .buildBlocking()
 
-        } catch (e: Exception) {
-            Toast.makeText(this, "Napaka pri povezavi", Toast.LENGTH_SHORT).show()
+                mqttClient.connect()
+                sendMessage("UUID", uuid)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MyApplication, "Povezava uspešna", Toast.LENGTH_SHORT).show()
+
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MyApplication, "Povezava ni uspešna", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
+
+
 
     fun sendMessage(topic: String, message: String) {
         try {

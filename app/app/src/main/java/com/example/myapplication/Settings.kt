@@ -2,6 +2,9 @@ package com.example.myapplication
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
@@ -37,12 +40,12 @@ class Settings : AppCompatActivity() {
             Toast.makeText(this, "Ping poslan iz Settings", Toast.LENGTH_SHORT).show()
         }
 
-//        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
-//            if (!hasFocus) {
-//                val input = binding.MqqtAddr.text.toString().trim()
-//                connectToMqqt(input)
-//            }
-//        }
+        binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val input = binding.MqqtAddr.text.toString().trim()
+                connectToMqqt(input)
+            }
+        }
 
         binding.server.setOnClickListener{
             val server ="193.95.229.123:1883"
@@ -63,5 +66,11 @@ class Settings : AppCompatActivity() {
             app.logout()
             finish()
         }
+
+        binding.download.setOnClickListener {
+            binding.qr.visibility = View.VISIBLE
+            binding.download.visibility = View.INVISIBLE
+        }
+
     }
 }
