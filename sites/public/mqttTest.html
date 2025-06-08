@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MQTT Test</title>
+  <script src="https://unpkg.com/paho-mqtt/mqttws31.min.js"></script>
+</head>
+<body>
+  <h1>MQTT preko WebSocket</h1>
+  <button onclick="publishMessage()">Pošlji sporočilo</button>
+
+  <script>
+    // Ustvari MQTT odjemalca
+    const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "clientId" + Math.random());
+
+    // Ko se poveže
+    client.onConnectionLost = (responseObject) => {
+      console.log("Povezava izgubljena: " + responseObject.errorMessage);
+    };
+
+    client.onMessageArrived = (message) => {
+      console.log("Sporočilo prispelo: " + message.payloadString);
+    };
+
+    client.connect({
+      onSuccess: () => {
+        console.log("Povezan na MQTT strežnik");
+        client.subscribe("test/topic");
+      }
+    });
+
+    function publishMessage() {
+      const message = new Paho.MQTT.Message("Pozdrav iz HTML!");
+      message.destinationName = "test/topic";
+      client.send(message);
+    }
+  </script>
+</body>
+</html>
