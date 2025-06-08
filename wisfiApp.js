@@ -342,6 +342,11 @@ app.post(`${proxy}/izklopi2f`, async (req, res) => {
     }
 });
 
+app.get(`${proxy}/seznam`, (req, res) => {
+    res.render('seznam');
+});
+
+
 app.listen(port, () => {
     console.log(`🌐 HTTP na portu ${port}`);
 });
