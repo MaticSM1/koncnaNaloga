@@ -11,6 +11,8 @@ const { exec } = require('child_process');
 const e = require('express');
 require('dotenv').config();
 const Product = require('./models/product.js');
+const User = require('./models/user.js');
+
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
@@ -34,7 +36,6 @@ const mongoose = require('mongoose');
 
 async function run() {
     try {
-        // MongoDB native client povezava (za global.client)
         await client.connect();
         await client.db("admin").command({ ping: 1 });
         console.log("✅ MongoDB native client povezan");
@@ -44,8 +45,6 @@ async function run() {
             useUnifiedTopology: true,
         });
         console.log("✅ Mongoose povezan");
-
-        p();
     } catch (err) {
         console.error("❌ Napaka pri povezovanju:", err);
     }
@@ -109,20 +108,29 @@ app.get(`${proxy}/logout`, (req, res) => {
 });
 
 app.post(`${proxy}/register`, async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email in geslo sta obvezna' });
+    const { username, password } = req.body;
+    if (!username || !password) 
+        return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
 
     try {
-        const db = global.client.db('users');
-        const existingUser = await db.collection('users').findOne({ email });
-        if (existingUser) return res.status(409).json({ message: 'Email že obstaja' });
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
 
-        await db.collection('users').insertOne({ email, password, login2f: false, phoneId: "" });
-        req.session.email = email;
-        req.session.login2f = user.login2f;
-        req.session.login2fPotrditev = false
+        const newUser = new User({
+            username,
+            password,
+            login2f: false,
+            phoneId: ''
+        });
+
+        await newUser.save();
+
+        req.session.username = username;
+        req.session.login2f = newUser.login2f;
+        req.session.login2fPotrditev = false;
 
         res.status(201).json({ message: 'Uporabnik uspešno registriran' });
+
     } catch (err) {
         console.error('Napaka pri registraciji:', err);
         res.status(500).json({ message: 'Napaka strežnika', error: err.message });
@@ -130,14 +138,18 @@ app.post(`${proxy}/register`, async (req, res) => {
 });
 
 app.post(`${proxy}/login`, async (req, res) => {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
+
+    if (!username || !password) 
+        return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
+
     try {
-        const db = global.client.db('users');
-        const user = await db.collection('users').findOne({ email });
+        const user = await User.findOne({ username });
+
         if (user && user.password === password) {
-            req.session.email = email;
+            req.session.username = username;
             req.session.login2f = user.login2f;
-        req.session.login2fPotrditev = false
+            req.session.login2fPotrditev = false;
 
             res.status(200).json({ message: 'Prijava uspešna' });
         } else {
@@ -148,6 +160,7 @@ app.post(`${proxy}/login`, async (req, res) => {
         res.status(500).json({ message: 'Napaka strežnika', error: err.message });
     }
 });
+
 
 app.get(`${proxy}/getItems`, async (req, res) => {
     const { name } = req.query;
