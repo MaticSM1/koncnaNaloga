@@ -109,6 +109,8 @@ app.get(`${proxy}/logout`, (req, res) => {
 
 app.post(`${proxy}/register`, async (req, res) => {
     const { username, password } = req.body;
+    console.log('Registracija:', username, password);
+
     if (!username || !password) 
         return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
 
