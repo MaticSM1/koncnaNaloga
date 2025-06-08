@@ -9,7 +9,6 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10)
 
     for epoch in range(num_epochs):
         model.train()
-        running_loss = 0.0
         correct = 0
         total = 0
 
@@ -22,17 +21,18 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10)
             loss.backward()
             optimizer.step()
 
-            running_loss += loss.item()
-            _, preds = torch.max(outputs, 1)
-            correct += (preds == labels).sum().item()
-            total += labels.size(0)
+            preds = outputs.argmax(1)
+            correct += (preds == labels).sum()
+            total += len(labels)
 
         accuracy = correct / total * 100
-        print(f"Epoch {epoch+1}/{num_epochs}, Loss: {running_loss:.4f}, Accuracy: {accuracy:.2f}%")
+        print(f"Epoch {epoch+1}/{num_epochs}, Accuracy: {accuracy:.2f}%")
 
     print("Training complete")
 
-def main():
+
+
+if __name__ == "__main__":
     data_dir = "data"
     batch_size = 32
     input_size = 224
@@ -43,7 +43,7 @@ def main():
 
     train_loader, test_loader, classes = get_data_loaders(data_dir, batch_size, input_size)
 
-    model = models.resnet18(pretrained=True)
+    model = models.resnet18()
     model.fc = nn.Linear(model.fc.in_features, 2)
     model = model.to(device)
 
@@ -54,6 +54,3 @@ def main():
 
     torch.save(model.state_dict(), "model/model_basic.pt")
     print("Model saved to model/model_basic.pt")
-
-if __name__ == "__main__":
-    main()

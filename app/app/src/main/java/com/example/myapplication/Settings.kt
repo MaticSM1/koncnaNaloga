@@ -20,7 +20,7 @@ class Settings : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         val addr = sharedPrefs.getString("addr", "")
         val port = sharedPrefs.getString("port", "")
-        val server = "dskslkddslk"
+        val server = addr+ ':' + port
         binding.MqqtAddr.setText(server)
 
         fun connectToMqqt(input:String){
@@ -61,6 +61,7 @@ class Settings : AppCompatActivity() {
         }
         binding.logout.setOnClickListener{
             app.logout()
+            finish()
         }
     }
 }

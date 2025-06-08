@@ -1,14 +1,12 @@
 package com.example.myapplication
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -17,9 +15,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapplication.databinding.ActivityCamBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import java.io.ByteArrayOutputStream
+import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,18 +32,23 @@ class Cam : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val intervalMs = 100L
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-    private var oldValue :String = ""
+    private var oldValue: String = ""
     lateinit var app: MyApplication
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    // Shranjevanje lokacije
+    private var latitude: Double? = null
+    private var longitude: Double? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCamBinding.inflate(layoutInflater)
         setContentView(binding.root)
         app = application as MyApplication
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         binding.webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
-
 
         if (isCameraPermissionGranted()) {
             startCamera()
@@ -51,10 +56,65 @@ class Cam : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
         }
 
+        if (isLocationPermissionGranted()) {
+            requestCurrentLocation()
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                11
+            )
+        }
 
-        binding.back.setOnClickListener{
+        binding.back.setOnClickListener {
             finish()
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            10 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startCamera()
+                } else {
+                    Toast.makeText(this, "Dovoljenje za kamero zavrnjeno", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            11 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestCurrentLocation()
+                } else {
+                    Toast.makeText(this, "Dovoljenje za lokacijo zavrnjeno", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun requestCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                location?.let {
+                    latitude = it.latitude
+                    longitude = it.longitude
+                    Log.d("Lokacija", "Trenutna lokacija: $latitude, $longitude")
+                    Toast.makeText(this, "Lokacija: $latitude, $longitude", Toast.LENGTH_SHORT).show()
+                } ?: run {
+                    Log.w("Lokacija", "Lokacija ni na voljo")
+                }
+            }
+    }
+
+    private fun isLocationPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun isCameraPermissionGranted(): Boolean {
@@ -129,10 +189,17 @@ class Cam : AppCompatActivity() {
                     if (rawValue != null) {
                         Toast.makeText(this, "QR najden: $rawValue", Toast.LENGTH_LONG).show()
                         Log.d("QR", "Najdeno: $rawValue")
-//                        app.sendMessage("QR", rawValue)
+
+                        // Zgradi JSON z lokacijo in QR kodo
+                        val json = JSONObject().apply {
+                            put("qr", rawValue)
+                            put("lat", latitude ?: "ni na voljo")
+                            put("lon", longitude ?: "ni na voljo")
+                        }
+
+                        app.sendMessage("QR", json.toString())
 
                         if (rawValue != oldValue) {
-                            // Naloži URL s številko izdelka samo prvič
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
                             oldValue = rawValue
                         }
@@ -145,7 +212,6 @@ class Cam : AppCompatActivity() {
                 Log.e("QR", "Napaka pri branju QR kode: ${it.message}", it)
             }
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
