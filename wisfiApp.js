@@ -569,20 +569,21 @@ aedes.on('publish', (packet, client) => {
 
 
 if (packet.topic === 'QR') {
-  try {
+//  try {
     const { qrcode, latitude, longitude } = JSON.parse(packet.payload.toString());
+    console.log( qrcode, latitude, longitude);
+//     const newProduct = new Product({
+//       qrcode,
+//       latitude,
+//       longitude,
+//     });
 
-    const newProduct = new Product({
-      qrcode,
-      latitude,
-      longitude,
-    });
-
-    newProduct.save()
-      .then(() => console.log('Product saved:', newProduct))
-      .catch(err => console.error('Error saving product:', err));
-  } catch (err) {
-    console.error('Failed to parse packet payload:', err);
-  }
+//     newProduct.save()
+//       .then(() => console.log('Product saved:', newProduct))
+//       .catch(err => console.error('Error saving product:', err));
+//   } catch (err) {
+//     console.error('Failed to parse packet payload:', err);
+//   }
 }
+
 });
