@@ -19,8 +19,6 @@ const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "";
 
-
-
 // MongoDB povezava
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri, {
@@ -32,13 +30,24 @@ const client = new MongoClient(uri, {
 });
 global.client = client;
 
+const mongoose = require('mongoose');
+
 async function run() {
     try {
+        // MongoDB native client povezava (za global.client)
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB povezan");
+        console.log("✅ MongoDB native client povezan");
+
+        await mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log("✅ Mongoose povezan");
+
+        p();
     } catch (err) {
-        console.error("❌ MongoDB napaka:", err);
+        console.error("❌ Napaka pri povezovanju:", err);
     }
 }
 run().catch(console.dir);
