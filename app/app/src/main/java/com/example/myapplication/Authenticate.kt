@@ -60,7 +60,7 @@ class Authenticate : AppCompatActivity() {
             if (!isWaitingForResponse) {
                 isWaitingForResponse = true
                 hasReceivedResponse = false
-                app.sendRawBytesMessage("Authenticate", bitmap)
+                app.sendRawBytesMessage("Registerimage", bitmap)
             }
         }
 
@@ -79,7 +79,6 @@ class Authenticate : AppCompatActivity() {
                 finish()
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                Toast.makeText(this, "N beseda:", Toast.LENGTH_LONG).show()
             }
         }
     }
