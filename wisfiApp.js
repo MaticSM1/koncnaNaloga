@@ -12,6 +12,8 @@ const e = require('express');
 require('dotenv').config();
 const Product = require('./models/product.js');
 const User = require('./models/user.js');
+const bcrypt = require('bcrypt');
+
 
 const runningOnServer = process.env.RUNNING_ON_SERVER || false;
 let avtentikacija = ""
@@ -109,25 +111,27 @@ app.get(`${proxy}/logout`, (req, res) => {
 
 app.post(`${proxy}/register`, async (req, res) => {
     const { username, password } = req.body;
-    console.log('Registracija:', username, password);
 
     if (!username || !password) 
         return res.status(400).json({ message: 'Uporabniško ime in geslo sta obvezna' });
 
     try {
         const existingUser = await User.findOne({ username });
-        if (existingUser) return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
+        if (existingUser) 
+            return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
+
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 je "salt rounds"
 
         const newUser = new User({
             username,
-            password,
+            password: hashedPassword,
             login2f: false,
             phoneId: ''
         });
 
         await newUser.save();
 
-        req.session.email = username;
+        req.session.username = username;
         req.session.login2f = newUser.login2f;
         req.session.login2fPotrditev = false;
 
@@ -139,6 +143,7 @@ app.post(`${proxy}/register`, async (req, res) => {
     }
 });
 
+
 app.post(`${proxy}/login`, async (req, res) => {
     const { username, password } = req.body;
 
@@ -148,15 +153,21 @@ app.post(`${proxy}/login`, async (req, res) => {
     try {
         const user = await User.findOne({ username });
 
-        if (user && user.password === password) {
-            req.session.email = username;
-            req.session.login2f = user.login2f;
-            req.session.login2fPotrditev = false;
-
-            res.status(200).json({ message: 'Prijava uspešna' });
-        } else {
-            res.status(401).json({ message: 'Napačni podatki za prijavo' });
+        if (!user) {
+            return res.status(401).json({ message: 'Napačni podatki za prijavo' });
         }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({ message: 'Napačni podatki za prijavo' });
+        }
+
+        req.session.username = username;
+        req.session.login2f = user.login2f;
+        req.session.login2fPotrditev = false;
+
+        res.status(200).json({ message: 'Prijava uspešna' });
+
     } catch (err) {
         console.error('Napaka pri prijavi:', err);
         res.status(500).json({ message: 'Napaka strežnika', error: err.message });
