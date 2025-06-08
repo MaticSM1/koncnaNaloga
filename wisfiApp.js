@@ -585,6 +585,4 @@ if (packet.topic === 'QR') {
     console.error('Failed to parse packet payload:', err);
   }
 }
-
-
 });
