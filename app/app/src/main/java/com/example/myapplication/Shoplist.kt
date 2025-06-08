@@ -2,7 +2,7 @@ package com.example.myapplication
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -15,44 +15,29 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.myapplication.databinding.ActivityShoplistBinding
+import com.example.myapplication.utils.MyCamera
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import org.json.JSONObject
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.concurrent.Executors
 
 class Shoplist : AppCompatActivity() {
 
     private lateinit var binding: ActivityShoplistBinding
-    private lateinit var imageCapture: ImageCapture
+    private lateinit var myCamera: MyCamera
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var app: MyApplication
 
-    private val handler = Handler(Looper.getMainLooper())
-    private val intervalMs = 100L
-    private val cameraExecutor = Executors.newSingleThreadExecutor()
-
-    private var cameraProvider: ProcessCameraProvider? = null
     private var isCameraRunning = false
     private var oldValue: String = ""
 
     private var latitude: Double? = null
     private var longitude: Double? = null
     private var lightLevel: Float? = null
-
-    private var photoRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +47,7 @@ class Shoplist : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        binding.webView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+        binding.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         binding.webView.loadUrl("https://z7.si/wisfi/seznam")
 
         setupLightSensor()
@@ -143,75 +128,27 @@ class Shoplist : AppCompatActivity() {
         if (isCameraRunning) return
         isCameraRunning = true
 
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        myCamera = MyCamera(
+            context = this,
+            lifecycleOwner = this,
+            previewView = binding.previewView,
+            isFrontCamera = false,
+            captureIntervalMs = 500L
+        ) { bitmap ->
+            processAndDisplayImage(bitmap)
+        }
 
-        cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.previewView.surfaceProvider)
-            }
-
-            imageCapture = ImageCapture.Builder().build()
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            cameraProvider?.unbindAll()
-            cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageCapture)
-
-            startTakingPhotosRepeatedly()
-
-        }, ContextCompat.getMainExecutor(this))
+        myCamera.startCamera()
     }
 
     private fun stopCamera() {
         if (!isCameraRunning) return
         isCameraRunning = false
-
-        photoRunnable?.let { handler.removeCallbacks(it) }
-        photoRunnable = null
-
-        cameraProvider?.unbindAll()
+        myCamera.stop()
         Log.d("Camera", "Kamera ustavljena")
     }
 
-    private fun startTakingPhotosRepeatedly() {
-        photoRunnable = object : Runnable {
-            override fun run() {
-                if (isCameraRunning) {
-                    takeAndShowPhoto()
-                    handler.postDelayed(this, intervalMs)
-                }
-            }
-        }
-        handler.post(photoRunnable!!)
-    }
-
-    private fun takeAndShowPhoto() {
-        val photoFile = File(externalCacheDir, createFileName())
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    processAndDisplayImage(photoFile.absolutePath)
-                }
-
-                override fun onError(exception: ImageCaptureException) {
-                    Log.e("CameraX", "Napaka pri zajemu slike: ${exception.message}", exception)
-                }
-            }
-        )
-    }
-
-    private fun createFileName(): String {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
-        return "IMG_$timeStamp.jpg"
-    }
-
-    private fun processAndDisplayImage(imagePath: String) {
-        val bitmap = BitmapFactory.decodeFile(imagePath)
+    private fun processAndDisplayImage(bitmap: Bitmap) {
         binding.webView.settings.javaScriptEnabled = true
 
         val image = InputImage.fromBitmap(bitmap, 0)
@@ -272,6 +209,5 @@ class Shoplist : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopCamera()
-        cameraExecutor.shutdown()
     }
 }
