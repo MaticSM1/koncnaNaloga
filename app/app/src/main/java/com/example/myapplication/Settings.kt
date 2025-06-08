@@ -37,7 +37,7 @@ class Settings : AppCompatActivity() {
         }
 
         binding.ping.setOnClickListener {
-            Toast.makeText(this, "Ping poslan iz Settings", Toast.LENGTH_SHORT).show()
+            app.initMqttClient()
         }
 
         binding.MqqtAddr.setOnFocusChangeListener { _, hasFocus ->
