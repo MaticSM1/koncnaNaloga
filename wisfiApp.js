@@ -603,12 +603,13 @@ aedes.on('publish', (packet, client) => {
     if (packet.topic === 'QR') {
 
         try {
-            const { qr, lat, lon } = JSON.parse(packet.payload.toString());
-            console.log(qr, lat, lon);
+            const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
+            console.log(qr, lat, lon,light);
             const newProduct = new Product({
                 qrcode: qr,
                 latitude: lat,
                 longitude: lon,
+
             });
 
             newProduct.save()
