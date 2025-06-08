@@ -316,6 +316,10 @@ app.listen(port, () => {
 const mqttPort = 1883;
 const mqttServer = net.createServer(aedes.handle);
 let clients = [];
+let activeClients = [];
+let steviloAktivnih1 = 0; // enostaven način
+let steviloAktivnih2 = 0; // naš način
+
 
 aedes.authorizeSubscribe = function (client, sub, callback) {
     if (sub.topic === 'imageRegister') {
@@ -330,9 +334,17 @@ mqttServer.listen(mqttPort, () => {
 });
 
 aedes.on('client', (client) => {
-    console.log('📡 Odjemalec povezan:', client?.id || 'neznano');
+    console.log('📡 Nov:', client?.id);
+    steviloAktivnih1++;
 });
 
+aedes.on('clientDisconnect', (client) => {
+    console.log('📡 Dojava:', client?.id);
+    steviloAktivnih1--;
+    if (client && clients[client.id]) {
+        delete clients[client.id];
+    }
+})
 
 
 
@@ -347,6 +359,8 @@ let trenutnaRegistracija = {
 
 aedes.on('publish', (packet, client) => {
 
+
+
     if (!packet.topic || packet.topic.startsWith('$SYS')) return;
 
     console.log('📨 Objavljeno:', packet.topic);
@@ -355,6 +369,8 @@ aedes.on('publish', (packet, client) => {
 
     const clientId = client ? client.id : 'neznano';
     console.log('👤 Objavil clientId:', clientId);
+    if (clientId) activeClients[clientId] = new Date()
+    steviloAktivnih2 = Object.keys(activeClients).length;
 
     const dataDir = path.join(__dirname, 'sites/public/data');
 
@@ -549,4 +565,9 @@ aedes.on('publish', (packet, client) => {
 
 
     }
+
+    if (packet.topic === 'QR') {
+   
+    }
+
 });
