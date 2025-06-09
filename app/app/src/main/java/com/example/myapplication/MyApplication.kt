@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -15,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -48,7 +50,6 @@ class MyApplication : Application() {
         val uuid = setUUID()
         editor.apply()
 
-        // Launch on IO thread
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 mqttClient = MqttClient.builder()
@@ -93,8 +94,12 @@ class MyApplication : Application() {
         }
     }
 
-    fun sendRawBytesMessage(topic: String, data: ByteArray) {
+    fun sendRawBytesMessage(topic: String, bitmap: Bitmap) {
         try {
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            val byteArray = outputStream.toByteArray()
+
             if (mqttClient.state != MqttClientState.CONNECTED) {
                 mqttClient.connect()
             }
@@ -102,15 +107,15 @@ class MyApplication : Application() {
             mqttClient.publishWith()
                 .topic(topic)
                 .qos(MqttQos.AT_LEAST_ONCE)
-                .payload(data)
+                .payload(byteArray)
                 .send()
 
             Toast.makeText(this, "Sporočilo poslano na '$topic'", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Log.e("MQTT", "Napaka pri pošiljanju: ${e.message}")
             Toast.makeText(this, "Napaka pri pošiljanju: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
 
     fun subscribe() {
         val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)

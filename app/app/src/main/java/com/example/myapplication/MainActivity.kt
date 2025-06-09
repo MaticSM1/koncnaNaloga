@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 
@@ -22,7 +23,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.authenticate.setOnClickListener {
-            val intent = Intent(this, Authenticate::class.java)
+            val intent = if (binding.loginButton.text == "LOG IN") {
+                Intent(this, Login::class.java)
+            } else {
+                Intent(this, Authenticate::class.java)
+            }
+            startActivity(intent)
+        }
+
+        binding.shoplist.setOnClickListener {
+            val intent = Intent(this, Shoplist::class.java)
             startActivity(intent)
         }
 
