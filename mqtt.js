@@ -1,4 +1,3 @@
-// mqttServer.js
 const aedes = require('aedes')({ decodePayload: false });
 const net = require('net');
 const fs = require('fs');
@@ -14,13 +13,10 @@ let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: ""
 let avtentikacija = "";
 let avtentikacijaDate = new Date();
 
-
 let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
 
-
 const mqttServer = net.createServer(aedes.handle);
-
 
 
 aedes.authorizeSubscribe = function (client, sub, callback) {
@@ -57,7 +53,6 @@ const orvInputDir = path.join(__dirname, 'orv/input');
 aedes.on('publish', (packet, client) => {
 
 
-
     if (!packet.topic || packet.topic.startsWith('$SYS')) return;
 
     console.log('📨 Objavljeno:', packet.topic);
@@ -65,7 +60,7 @@ aedes.on('publish', (packet, client) => {
     console.log('🔢 Velikost:', packet.payload.length);
 
     const clientId = client ? client.id : 'neznano';
-    console.log('👤 Objavil clientId:', clientId);
+    console.log('👤 clientId:', clientId);
     if (clientId) activeClients[clientId] = new Date()
     steviloAktivnih2 = Object.keys(activeClients).length;
 
@@ -207,11 +202,11 @@ aedes.on('publish', (packet, client) => {
             console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
         } else {
             aedes.publish({
-                    topic: clients[clientId],
-                    payload: Buffer.from('ok'),
-                    qos: 0,
-                    retain: false
-                    });
+                topic: clients[clientId],
+                payload: Buffer.from('ok'),
+                qos: 0,
+                retain: false
+            });
             console.log('Zasedeno');
         }
     }
@@ -270,49 +265,45 @@ aedes.on('publish', (packet, client) => {
 
 
     if (packet.topic === 'QR') {
-  try {
-    const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-    console.log(qr, lat, lon, light);
+        try {
+            const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
+            console.log(qr, lat, lon, light);
 
-    const newProduct = new Product({
-        qrcode: qr,
-        latitude: lat,
-        longitude: lon,
-        light: light
-    });
+            const newProduct = new Product({
+                qrcode: qr,
+                latitude: lat,
+                longitude: lon,
+                light: light
+            });
 
-    const user = clients[clientId];
+            const user = clients[clientId];
 
-    newProduct.save()
-        .then(savedProduct => {
-            console.log('Product saved:', savedProduct);
+            newProduct.save()
+                .then(savedProduct => {
+                    console.log('Product saved:', savedProduct);
 
-            return User.findOneAndUpdate(
-                { username: user },
-                { $push: { products: savedProduct._id } },
-                { new: true }
-            );
-        })
-        .then(updatedUser => {
-            if (updatedUser) {
-                console.log('Product ID added to user:', updatedUser.username);
-            } else {
-                console.log('User not found');
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-        });
-} catch (err) {
-    console.error('Failed to parse packet payload:', err);
-}
+                    return User.findOneAndUpdate(
+                        { username: user },
+                        { $push: { products: savedProduct._id } },
+                        { new: true }
+                    );
+                })
+                .then(updatedUser => {
+                    if (updatedUser) {
+                        console.log('Product ID added to user:', updatedUser.username);
+                    } else {
+                        console.log('User not found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                });
+        } catch (err) {
+            console.error('Failed to parse packet payload:', err);
+        }
 
-}
-
-
+    }
 });
-
-
 
 
 module.exports = {
