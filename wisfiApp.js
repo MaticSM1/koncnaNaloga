@@ -4,6 +4,7 @@ const net = require('net');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jagerLinux');
+const scraper = require('./scraperLinux');
 const fs = require('fs');
 const path = require('path');
 const { render } = require('ejs');
