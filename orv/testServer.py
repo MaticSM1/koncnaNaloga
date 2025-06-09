@@ -20,7 +20,7 @@ model = models.resnet18(weights=None)
 model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
 # Naloži naučene uteži
-model.load_state_dict(torch.load("../orv/model/model_basic.pt"))
+model.load_state_dict(torch.load("orv/model/model_basic.pt"))
 model = model.to(device)
 model.eval()
 
@@ -36,6 +36,6 @@ def predict_image(image_path):
 
 # Glavni del programa
 if __name__ == "__main__":
-    path = "../orv/inputLogin/test.jpg"
+    path = "orv/inputLogin/test.jpg"
     result = predict_image(path)
     print(result)
