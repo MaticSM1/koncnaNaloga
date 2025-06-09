@@ -122,7 +122,7 @@
                             card.onclick = () => viewProduct(data.name || '');
                             card.innerHTML = `
                         <div class="product-image">
-                            ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:100px;height:100px;object-fit:contain;">` : (data.emoji || '🛒')}
+                            ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:90%;height:90%;object-fit:contain;">` : (data.emoji || '🛒')}
                         </div>
                         <div class="product-info">
                             <div class="product-name">${data.name || data.name2 || 'Neznan izdelek'}</div>
