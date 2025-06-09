@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: transparent;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .add-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .add-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        
+        .add-input:focus {
+            border-color: #4caf50;
+        }
+        
+        .add-button {
+            padding: 0.75rem 1rem;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        .add-button:hover {
+            background: #369139;
+        }
+        
+        .list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .list-item.completed {
+            background-color: #f8f9fa;
+            opacity: 0.7;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .list-item.completed .checkbox {
+            border-color: #27ae60;
+            background: #27ae60;
+        }
+        
+        .checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .list-item.completed .checkbox::after {
+            opacity: 1;
+        }
+        
+        .item-text {
+            flex: 1;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .list-item.completed .item-text {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+        
+        .delete-btn {
+            opacity: 0;
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1.1rem;
+            transition: opacity 0.2s;
+        }
+        
+        .list-item:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .delete-btn:hover {
+            color: #c0392b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #95a5a6;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #ecf0f1;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .stat-number {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .clear-btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>History List</h1>
+        </div>
+        
+        <div class="list" id="historyList">
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <p>Še ni dodanih artiklov</p>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        function render() {
+            if (items.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>Še ni dodanih artiklov</p>
+                    </div>
+                `;
+                return;
+            }
+        }
+        render();
+    </script>
+</body>
+</html>

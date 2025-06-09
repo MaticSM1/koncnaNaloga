@@ -232,19 +232,19 @@ app.get(`${proxy}/history`, async (req, res) => {
     const { id } = req.query;
 
     try {
-        const user = await User.findById(id).populate('products');
+        const user = await User.findOne({ username: id }).populate('products');
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).send('User not found');
         }
-
-        const productNames = user.products.map(product => product.id);
-
-        res.json({ products: productNames });
+        const productNames = user.products.map(product => product.qrcode);
+        console.log(productNames);
+        res.render('zgodovina', { productNames });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).send('Server error');
     }
 });
+
 
 
 app.get(`${proxy}/zemljevid`, (req, res) => {
@@ -660,7 +660,7 @@ aedes.on('publish', (packet, client) => {
                 console.log('Product saved:', savedProduct);
 
                 return User.findByIdAndUpdate(
-                    user._id,
+                    user,
                     { $push: { products: savedProduct.id } },
                     { new: true }
                 );
