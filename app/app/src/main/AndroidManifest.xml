@@ -27,6 +27,9 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".History"
+            android:exported="false" />
+        <activity
             android:name=".Shoplist"
             android:exported="false" />
         <activity
