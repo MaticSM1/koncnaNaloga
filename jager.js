@@ -78,6 +78,6 @@ async function getProductCode(ime) {
     return productCode.split(":")[1];
 }
 
-getProductCode("mleko");
+//getProductCode("mleko");
 
 module.exports = { getProductCode };

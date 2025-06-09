@@ -4,6 +4,8 @@ const net = require('net');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jagerLinux');
+const jagerWin = require('./jager');
+
 const scraper = require('./scraperLinux');
 const fs = require('fs');
 const path = require('path');
@@ -16,23 +18,31 @@ const User = require('./models/user.js');
 const bcrypt = require('bcrypt');
 
 
-const runningOnServer = process.env.RUNNING_ON_SERVER || false;
+const runningOnServer = (process.env.SERVER == "TRUE");
+console.log('Running on server:', runningOnServer);
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
 
+
+
 const app = express();
 const port = 3000;
-let proxy = process.env.PROXY || "";
+let proxy = process.env.PROXY || "/wisfi";
 
 // MongoDB povezava
-const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
+const uri = process.env.MONGO_URI || "VNESI URI MONGODB!!!";
+let client;
+try {
+    client = new MongoClient(uri, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        }
+    });
+} catch (err) {
+    console.error("Napaka pri podatkovni bazi:", err);
+}
 global.client = client;
 
 const mongoose = require('mongoose');
@@ -58,7 +68,7 @@ run().catch(console.dir);
 // Middleware
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET ||"Ni nastavljen",
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
@@ -193,7 +203,9 @@ app.get(`${proxy}/getItems`, async (req, res) => {
 
     try {
         try {
-            const result = await jager.getProductCode(name);
+            let result
+            if (runningOnServer) result = await jager.getProductCode(name);
+            else result = await jagerWin.getProductCode(name);
             res.json({ result });
         } catch (err) {
             console.error('Napaka pri getProductCode:', err);

@@ -30,7 +30,6 @@
         .header {
             text-align: center;
             padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.1);
         }
 
         .product-title {
@@ -62,7 +61,6 @@
         }
 
         .info-section {
-            background: rgba(255, 255, 255, 0.15);
             padding: 30px 20px;
             backdrop-filter: blur(10px);
         }
@@ -75,7 +73,6 @@
         }
 
         .info-item {
-            background: rgba(255, 255, 255, 0.2);
             margin-bottom: 15px;
             padding: 15px;
             border-radius: 10px;
@@ -99,7 +96,8 @@
             }
             
             .product-image {
-                width: 200px;
+                max-height: 40%;
+                text-align: center;
             }
         }
     </style>
@@ -111,7 +109,7 @@
     </div>
     
     <div class="image-section">
-        <img src="<%= data.imageSrc %>" alt="Mleko Pomursko" class="product-image">
+        <img src="<%= data.imageSrc %>" alt="Izdelek" class="product-image">
     </div>
     
 <% 
