@@ -62,103 +62,30 @@
 
 
 
-
-
-
-
-
-
-
-
-
                 <div id="carousel-wrapper" class="carousel-wrapper">
                     <div class="carousel" id="carousel">
-                        <div class="product-card" onclick="viewProduct('Nutella')">
-                            <div class="product-image">🍫</div>
-                            <div class="product-info">
-                                <div class="product-name">Nutella</div>
-                                <div class="product-brand">Ferrero</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: sladkor, palmovo olje, lešniki, kakav v prahu, posneto mleko v
-                                    prahu
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="product-card" onclick="viewProduct('Coca Cola')">
-                            <div class="product-image">🥤</div>
-                            <div class="product-info">
-                                <div class="product-name">Coca Cola</div>
-                                <div class="product-brand">The Coca-Cola Company</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: gazirana voda, sladkor, barvilo karamel, kislina, naravne
-                                    arome, kofein
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="product-card" onclick="viewProduct('Milka čokolada')">
-                            <div class="product-image">🍫</div>
-                            <div class="product-info">
-                                <div class="product-name">Milka čokolada</div>
-                                <div class="product-brand">Mondelez</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: sladkor, kakavovo maslo, mleko v prahu, kakavova masa, laktoza
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="product-card" onclick="viewProduct('Activia jogurt')">
-                            <div class="product-image">🥛</div>
-                            <div class="product-info">
-                                <div class="product-name">Activia jogurt</div>
-                                <div class="product-brand">Danone</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: mleko, sladkor, jogurtove kulture, naravne arome, sadni
-                                    pripravek
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="product-card" onclick="viewProduct('Pringles')">
-                            <div class="product-image">🥔</div>
-                            <div class="product-info">
-                                <div class="product-name">Pringles Original</div>
-                                <div class="product-brand">Kellogg's</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: krompirjeva moka, rastlinska olja, pšenična moka, sol,
-                                    emulgatorji
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="product-card" onclick="viewProduct('Red Bull')">
-                            <div class="product-image">⚡</div>
-                            <div class="product-info">
-                                <div class="product-name">Red Bull</div>
-                                <div class="product-brand">Red Bull GmbH</div>
-                                <div class="product-ingredients">
-                                    Glavne sestavine: voda, saharoza, glukoza, kislina, taurin, kofein, vitamini B
-                                </div>
-                            </div>
-                        </div>
+
+                    </div>
+
+                    <div class="carousel-dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+
                     </div>
                 </div>
+            </section>
+        </main>
 
-                <div class="carousel-dots">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-
-                </div>
-    </div>
-    </section>
-    </main>
-
-    <footer>
-        <p>WISFI - Narejeno za končno projektno nalogo na Fakulteta za elektrotehniko, računalništvo in informatiko.
-        </p>
-    </footer>
+        <footer>
+            <p>WISFI - Narejeno za končno projektno nalogo na Fakulteta za elektrotehniko, računalništvo in informatiko.
+            </p>
+        </footer>
     </div>
 
     <script>
@@ -173,21 +100,27 @@
 
         arrProducts.forEach((product, index) => {
             console.log('Izdelek:', product);
-            fetch(`/wisfi/public/data/${product}.json`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Podrobnosti izdelka:', data);
 
-                    const carouselWrapper = document.getElementById('carousel-wrapper');
-                    const carousel = document.getElementById('carousel');
-                    if (carousel) {
-                        // Clear existing cards
-                        carousel.innerHTML = '';
-                        // Add new product card
-                        const card = document.createElement('div');
-                        card.className = 'product-card';
-                        card.onclick = () => viewProduct(data.name || '');
-                        card.innerHTML = `
+
+            fetch(`/wisfi/public/data/${product}.json`)
+                .then(response => {
+                    if (!response.ok) {
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    try {
+                        console.log('Podrobnosti izdelka:', data);
+
+                        const carouselWrapper = document.getElementById('carousel-wrapper');
+                        const carousel = document.getElementById('carousel');
+                        if (carousel) {
+
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            card.onclick = () => viewProduct(data.name || '');
+                            card.innerHTML = `
                         <div class="product-image">${data.emoji || '🛒'}</div>
                         <div class="product-info">
                             <div class="product-name">${data.name || 'Neznan izdelek'}</div>
@@ -197,13 +130,17 @@
                             </div>
                         </div>
                     `;
-                        carousel.appendChild(card);
+                            carousel.appendChild(card);
+                        }
+                    } catch (e) {
+                        console.error('Napaka pri čiščenju imena izdelka:', e);
                     }
 
                 })
                 .catch(err => {
                     console.error('Napaka pri pridobivanju podrobnosti izdelka:', err);
                 });
+
         });
 
 

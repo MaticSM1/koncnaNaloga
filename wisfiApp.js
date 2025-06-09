@@ -103,7 +103,8 @@ app.get('/', async (req, res) => {
         }
     } else {
         console.log('Neprijavljen obiskovalec');
-        res.sendFile(__dirname + '/sites/main.html');
+        res.render('main');
+
     }
 });
 
