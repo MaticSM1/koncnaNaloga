@@ -12,6 +12,8 @@ let activeClients = [];
 let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
 let avtentikacija = "";
 let avtentikacijaDate = new Date();
+const bcrypt = require('bcrypt');
+
 
 let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
@@ -92,6 +94,8 @@ aedes.on('publish', (packet, client) => {
                     });
                 } else {
                     console.log("registracija uspesna")
+
+                    const hashedPassword = await bcrypt.hash(password, 10);
 
 
 
