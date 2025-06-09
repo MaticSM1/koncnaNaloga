@@ -204,5 +204,7 @@ function handleQR(packet, clientId) {
 module.exports = {
     mqttServer,
     clients,
-    activeClients
+    activeClients,
+    avtentikacija,
+    avtentikacijaDate
 };
