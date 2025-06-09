@@ -202,11 +202,10 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
         const dataPath = path.join(__dirname, 'sites/public/data', `${id}.json`);
         if (!fs.existsSync(dataPath)) {
             // await jager.getProductCode(id);
-            await scraper.getProduct(id, "jager");
             await scraper.getProduct(id, "veskajjes");
-
             const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
             return res.render('izdelek', { data });
+            await scraper.getProduct(id, "jager");
             // res.render('nalaganjeIzdelka');
 
         }
