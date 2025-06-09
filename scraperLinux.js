@@ -113,15 +113,14 @@ async function getProduct(ime, nacin) {
             console.log(`Iščem "${ime}" na VesKajJes.si...`);
             await page.goto(`https://veskajjes.si/component/finder/search?q=${ime}`, { waitUntil: 'networkidle2' });
 
-            try {
-                await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
-                await page.click('.bcms-cookies-btn--accept');
-                await page.waitForTimeout(1000);
-            } catch { }
-
             await page.waitForSelector('.arttitle', { timeout: 10000 });
             const name2 = (await page.$eval('.arttitle', el => el.textContent.trim())).replace(/\s+/g, '');
-            const data = (await page.$eval('.vzstatus-table', el => el.textContent.trim())).replace(/\s+/g, '');
+            let data = '';
+            try {
+                data = (await page.$eval('.vzstatus-table', el => el.textContent.trim())).replace(/\s+/g, '');
+            } catch (e) {
+                console.log('Podatki ne obstajajo');
+            }
 
             productData.name2 = name2;
             productData.data = data;
