@@ -197,15 +197,15 @@ app.get(`${proxy}/getItems`, async (req, res) => {
 app.get(`${proxy}/izdelek`, async (req, res) => {
     const { id } = req.query;
 
-
     try {
         const dataPath = path.join(__dirname, 'sites/public/data', `${id}.json`);
         if (!fs.existsSync(dataPath)) {
             // await jager.getProductCode(id);
             await scraper.getProduct(id, "veskajjes");
             const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-            return res.render('izdelek', { data });
+            res.render('izdelek', { data });
             await scraper.getProduct(id, "jager");
+            return
             // res.render('nalaganjeIzdelka');
 
         }
@@ -217,6 +217,10 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
     }
 
 });
+
+app.get(`${proxy}/zemljevid`, (req, res) => {
+      res.render('zemljevid');
+})
 
 app.get(`/wisfi`, (req, res) => {
     res.redirect('/');
