@@ -268,7 +268,7 @@ app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
             return res.status(404).send('User not found');d
         }
 
-        user.shoppingList.push(name);
+        user.shopIteams.push(name);
         await user.save();
 
         res.send('Item added to shopping list');
