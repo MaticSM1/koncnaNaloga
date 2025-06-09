@@ -36,6 +36,7 @@ const client = new MongoClient(uri, {
 global.client = client;
 
 const mongoose = require('mongoose');
+const user = require('./models/user.js');
 
 async function run() {
     try {
@@ -577,7 +578,6 @@ aedes.on('publish', (packet, client) => {
 
         });
 
-        // linux prijava
         const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
         const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
         const process = exec(`${pythonCmd} "${scriptPath}"`);
@@ -585,7 +585,6 @@ aedes.on('publish', (packet, client) => {
         process.stdout.on('data', (data) => {
             console.log(`Python stdout: ${data}`);
             if (data == "True\n") {
-                // odgovor
                 console.log(clients[clientId]);
                 aedes.publish({
                     topic: clients[clientId],
@@ -624,23 +623,39 @@ aedes.on('publish', (packet, client) => {
 
 
     if (packet.topic === 'QR') {
+    try {
+        const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
+        console.log(qr, lat, lon, light);
 
-        try {
-            const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-            console.log(qr, lat, lon, light);
-            const newProduct = new Product({
-                qrcode: qr,
-                latitude: lat,
-                longitude: lon,
+        const newProduct = new Product({
+            qrcode: qr,
+            latitude: lat,
+            longitude: lon,
+            light: light
+        });
 
+        const user = clients[clientId];
+
+        newProduct.save()
+            .then(savedProduct => {
+                console.log('Product saved:', savedProduct);
+
+                return User.findByIdAndUpdate(
+                    user._id,
+                    { $push: { products: savedProduct.id } },
+                    { new: true }
+                );
+            })
+            .then(updatedUser => {
+                console.log('Product ID added to user:', updatedUser.username);
+            })
+            .catch(err => {
+                console.error('Error:', err);
             });
-
-            newProduct.save()
-                .then(() => console.log('Product saved:', newProduct))
-                .catch(err => console.error('Error saving product:', err));
-        } catch (err) {
-            console.error('Failed to parse packet payload:', err);
-        }
+    } catch (err) {
+        console.error('Failed to parse packet payload:', err);
     }
+}
+
 
 });
