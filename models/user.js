@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     }],
     list: [{
         type: String,
-        ref: 'Product'
+        ref: 'list'
     }]
 });
 

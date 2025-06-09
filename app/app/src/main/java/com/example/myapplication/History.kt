@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityHistoryBinding
 
@@ -23,7 +24,8 @@ class History : AppCompatActivity() {
         binding.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         binding.webView.settings.javaScriptEnabled = true
         val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        val user = sharedPreferences.getString("user", null)
+        val user = sharedPreferences.getString("username", null)
+        Toast.makeText(this, user, Toast.LENGTH_SHORT).show()
         binding.webView.loadUrl("https://z7.si/wisfi/history?id=$user")
         binding.back.setOnClickListener { finish() }
     }
