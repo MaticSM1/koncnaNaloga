@@ -15,6 +15,10 @@ let avtentikacija = "";
 let avtentikacijaDate = new Date();
 
 
+let steviloAktivnih1 = 0; // enostaven način
+let steviloAktivnih2 = 0; // naš način
+
+
 const mqttServer = net.createServer(aedes.handle);
 
 

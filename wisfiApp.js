@@ -85,7 +85,7 @@ app.get('/', async (req, res) => {
             if (req.session.login2fPotrditev) {
                 console.log('Prijavljen1:', req.session.email);
                 try {
-                    const products = await Product.find().sort({ _id: -1 }).limit(3); 
+                    const products = await Product.find().sort({ _id: -1 }).limit(3);
                     res.render('portal', { products });
                 } catch (err) {
                     res.render('portal', {});
