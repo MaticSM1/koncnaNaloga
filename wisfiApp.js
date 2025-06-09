@@ -228,6 +228,25 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
 
 });
 
+app.get(`${proxy}/history`, async (req, res) => {
+    const { id } = req.query;
+
+    try {
+        const user = await User.findById(id).populate('products');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const productNames = user.products.map(product => product.id);
+
+        res.json({ products: productNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
 app.get(`${proxy}/zemljevid`, (req, res) => {
     res.render('zemljevid');
 })
