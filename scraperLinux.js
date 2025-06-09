@@ -80,11 +80,23 @@ async function getProduct(ime, nacin) {
 
             productData = { name, price, imageSrc };
             console.log('✅ Podatki (Jager):', productData);
-
             try {
                 const outputFileName = productCode || ime.replace(/\s+/g, '_');
                 const outputPath = path.join(outputDir, `${outputFileName}.json`);
-                fs.writeFileSync(outputPath, JSON.stringify(productData, null, 2), 'utf8');
+
+                let existingData = {};
+                if (fs.existsSync(outputPath)) {
+                    try {
+                        existingData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+                        if (typeof existingData !== 'object' || Array.isArray(existingData)) existingData = {};
+                    } catch (e) {
+                        existingData = {};
+                    }
+                }
+
+                const mergedData = { ...existingData, ...productData };
+
+                fs.writeFileSync(outputPath, JSON.stringify(mergedData, null, 2), 'utf8');
                 console.log(`✅ Podatki shranjeni v: ${outputPath}`);
             } catch (err) {
                 console.error('Napaka pri shranjevanju datoteke:', err);
@@ -122,7 +134,20 @@ async function getProduct(ime, nacin) {
         try {
             const outputFileName = productCode || ime.replace(/\s+/g, '_');
             const outputPath = path.join(outputDir, `${outputFileName}.json`);
-            fs.writeFileSync(outputPath, JSON.stringify(productData, null, 2), 'utf8');
+
+            let existingData = {};
+            if (fs.existsSync(outputPath)) {
+                try {
+                    existingData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+                    if (typeof existingData !== 'object' || Array.isArray(existingData)) existingData = {};
+                } catch (e) {
+                    existingData = {};
+                }
+            }
+
+            const mergedData = { ...existingData, ...productData };
+
+            fs.writeFileSync(outputPath, JSON.stringify(mergedData, null, 2), 'utf8');
             console.log(`✅ Podatki shranjeni v: ${outputPath}`);
         } catch (err) {
             console.error('Napaka pri shranjevanju datoteke:', err);
