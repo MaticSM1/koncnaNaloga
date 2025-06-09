@@ -53,25 +53,21 @@ const browser = await puppeteer.launch({
         fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    let existingData = [];
+    let existingData = {};
     if (fs.existsSync(outputPath)) {
         try {
             existingData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-            if (!Array.isArray(existingData)) existingData = [existingData];
+            if (typeof existingData !== 'object' || Array.isArray(existingData)) existingData = {};
         } catch (e) {
-            existingData = [];
+            existingData = {};
         }
     }
 
     // nov
-    const newEntry = { name2, data };
-    const exists = existingData.some(
-        item => item.name2 === newEntry.name2 && item.data === newEntry.data
-    );
-    if (!exists) {
-        existingData.push(newEntry);
-        fs.writeFileSync(outputPath, JSON.stringify(existingData, null, 2), 'utf8');
-    }
+    existingData.name2 = name2;
+    existingData.data = data;
+
+    fs.writeFileSync(outputPath, JSON.stringify(existingData, null, 2), 'utf8');
 
 
     return true
