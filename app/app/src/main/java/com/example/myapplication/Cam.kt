@@ -118,9 +118,8 @@ class Cam : AppCompatActivity() {
                             put("light", lightLevel ?: "ni na voljo")
                         }
 
-                        app.sendMessage("QR", json.toString())
-
                         if (rawValue != oldValue) {
+                            app.sendMessage("QR", json.toString())
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
                             oldValue = rawValue
                         }
