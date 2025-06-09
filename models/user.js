@@ -22,9 +22,9 @@ const UserSchema = new mongoose.Schema({
         type: String,
         ref: 'Product'
     }],
-    list: [{
+    shopIteams: [{
         type: String,
-        ref: 'list'
+        ref: 'shopIteam'
     }]
 });
 
