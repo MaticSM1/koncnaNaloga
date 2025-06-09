@@ -105,6 +105,12 @@ aedes.on('publish', (packet, client) => {
                         login2f: false,
                         phoneId: UUID,
                     });
+                    await db.collection('users').insertOne({
+                        username: username,
+                        password: hashedPassword,
+                        login2f: false,
+                        phoneId: UUID,
+                    });
                     clients[clientId] = username;
                     console.log('Uporabnik registriran:', username);
                     aedes.publish({
