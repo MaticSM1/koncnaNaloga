@@ -258,6 +258,26 @@ app.get(`${proxy}/history`, async (req, res) => {
     }
 });
 
+app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
+    const { name } = req.query;
+    const username = req.session.email
+
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).send('User not found');d
+        }
+
+        user.shopIteams.push(name);
+        await user.save();
+
+        res.send('Item added to shopping list');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
 
 
 app.get(`${proxy}/zemljevid`, async (req, res) => {
