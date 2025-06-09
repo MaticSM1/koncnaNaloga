@@ -18,6 +18,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         sparse: true
     },
+    products: [{
+        type: String,
+        ref: 'Product'
+    }]
 });
 
 module.exports = mongoose.model('User', UserSchema);
