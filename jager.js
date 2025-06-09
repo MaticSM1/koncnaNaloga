@@ -2,17 +2,16 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-// Poskrbi za __dirname, če ne obstaja
 if (typeof __dirname === 'undefined') {
     global.__dirname = path.resolve();
 }
 
 async function getProductCode(ime) {
-    console.log('Zaganjam brskalnik (headless)...');
-    const browser = await puppeteer.launch({
-        headless: 'new', // ali true za starejše različice
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    console.log('nov brskalnik...');
+     const browser = await puppeteer.launch({
+         headless: false, // prikaz
+         args: ['--no-sandbox', '--disable-setuid-sandbox']
+     });
 
     const page = await browser.newPage();
 
@@ -21,41 +20,37 @@ async function getProductCode(ime) {
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
     );
 
-    console.log(`Odpiram iskalno stran za "${ime}"...`);
+    console.log(`stran za "${ime}"...`);
     await page.goto(`https://www.trgovinejager.com/iskalnik/?isci=${ime}`, { waitUntil: 'networkidle2' });
 
-    // Sprejmi piškotke, če so prikazani
     try {
-        console.log('Preverjam, ali je prikazano obvestilo o piškotkih...');
+        console.log('Piskotki?');
         await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
-        console.log('Klikam "Sprejmi vse"...');
+        console.log('Sprejem piskotkov');
         await page.click('.bcms-cookies-btn--accept');
         await page.waitForTimeout(1000);
     } catch (e) {
-        console.log('Banner za piškotke ni bil prikazan.');
+        console.log('Piskotkov ni vec');
     }
 
-    // Čakaj na rezultate
-    console.log('Čakam na prikaz rezultatov...');
+    console.log('prikaz rezultatov...');
     await page.waitForSelector('.item-box', { timeout: 10000 });
 
-    // Pridobi povezavo prvega izdelka
-    console.log('Pridobivam povezavo prvega izdelka...');
+    console.log('prvi izdelk...');
     const itemBox = await page.$('.item-box a');
 
     if (!itemBox) {
-        console.log('⚠️ Ni bilo mogoče najti prvega izdelka.');
+        console.log('Ni prvaga izdelka.');
         await browser.close();
         return null;
     }
 
     const productUrl = await page.evaluate(a => a.href, itemBox);
-    console.log('✅ Povezava prvega izdelka:', productUrl);
+    console.log('✅:', productUrl);
 
     console.log(`stran izdelka: ${productUrl}`);
     await page.goto(productUrl, { waitUntil: 'networkidle2' });
 
-    // šifra produkta
     console.log('šifre produkta...');
     await page.waitForSelector('.prod-number', { timeout: 10000 });
 
@@ -70,7 +65,6 @@ async function getProductCode(ime) {
 
     await browser.close();
 
-    // Shrani v datoteko
     const outputDir = path.join(__dirname, '/sites/public/data');
     const outputPath = path.join(outputDir, `${productCode.split(":")[1]}.json`);
 

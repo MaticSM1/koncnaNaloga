@@ -85,7 +85,7 @@ app.get('/', async (req, res) => {
             if (req.session.login2fPotrditev) {
                 console.log('Prijavljen1:', req.session.email);
                 try {
-                    const products = await Product.find().sort({ _id: -1 }).limit(3);
+                    const products = await Product.find().sort({ _id: -1 }).limit(3); 
                     res.render('portal', { products });
                 } catch (err) {
                     res.render('portal', {});
@@ -642,44 +642,44 @@ aedes.on('publish', (packet, client) => {
 
 
     if (packet.topic === 'QR') {
-        try {
-            const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-            console.log(qr, lat, lon, light);
+  try {
+    const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
+    console.log(qr, lat, lon, light);
 
-            const newProduct = new Product({
-                qrcode: qr,
-                latitude: lat,
-                longitude: lon,
-                light: light
-            });
+    const newProduct = new Product({
+        qrcode: qr,
+        latitude: lat,
+        longitude: lon,
+        light: light
+    });
 
-            const user = clients[clientId];
+    const user = clients[clientId];
 
-            newProduct.save()
-                .then(savedProduct => {
-                    console.log('Product saved:', savedProduct);
+    newProduct.save()
+        .then(savedProduct => {
+            console.log('Product saved:', savedProduct);
 
-                    return User.findOneAndUpdate(
-                        { username: user },
-                        { $push: { products: savedProduct._id } },
-                        { new: true }
-                    );
-                })
-                .then(updatedUser => {
-                    if (updatedUser) {
-                        console.log('Product ID added to user:', updatedUser.username);
-                    } else {
-                        console.log('User not found');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                });
-        } catch (err) {
-            console.error('Failed to parse packet payload:', err);
-        }
+            return User.findOneAndUpdate(
+                { username: user },
+                { $push: { products: savedProduct._id } },
+                { new: true }
+            );
+        })
+        .then(updatedUser => {
+            if (updatedUser) {
+                console.log('Product ID added to user:', updatedUser.username);
+            } else {
+                console.log('User not found');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+} catch (err) {
+    console.error('Failed to parse packet payload:', err);
+}
 
-    }
+}
 
 
 });
