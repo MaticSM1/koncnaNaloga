@@ -71,7 +71,7 @@ app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     console.log(req.session.email);
     if (req.session.email) {
         if (req.session.login2f) {
@@ -83,19 +83,28 @@ app.get('/', (req, res) => {
 
             if (req.session.login2fPotrditev) {
                 console.log('Prijavljen1:', req.session.email);
-                res.sendFile(__dirname + '/sites/portal.html');
+                try {
+                    const products = await Product.find().sort({ _id: -1 }).limit(3); 
+                    res.render('portal', { products });
+                } catch (err) {
+                    res.render('portal', {});
+                }
             } else {
                 console.log('Prijavljen2:', req.session.email);
                 res.sendFile(__dirname + '/sites/potrditev.html');
             }
-
         } else {
-            console.log('Prijavljen3:', req.session.email);
-            res.sendFile(__dirname + '/sites/portal.html');
+            try {
+                const products = await Product.find().sort({ _id: -1 }).limit(3);
+                res.render('portal', { products });
+            } catch (err) {
+                res.render('portal', {});
+            }
         }
     } else {
         console.log('Neprijavljen obiskovalec');
-        res.sendFile(__dirname + '/sites/main.html');
+        res.render('main');
+
     }
 });
 
@@ -219,7 +228,7 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
 });
 
 app.get(`${proxy}/zemljevid`, (req, res) => {
-      res.render('zemljevid');
+    res.render('zemljevid');
 })
 
 app.get(`/wisfi`, (req, res) => {
@@ -635,4 +644,3 @@ aedes.on('publish', (packet, client) => {
     }
 
 });
-
