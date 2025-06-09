@@ -248,7 +248,7 @@ app.get(`${proxy}/history`, async (req, res) => {
 
 
 app.get(`${proxy}/zemljevid`, async (req, res) => {
-    const user2 = req.session.email 
+    const user2 = req.session.email
 
     if (!user2) {
         res.redirect(`${proxy}/`);
