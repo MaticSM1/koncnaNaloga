@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +12,6 @@ class History : AppCompatActivity() {
     private lateinit var binding: ActivityHistoryBinding
     private lateinit var app: MyApplication
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
@@ -22,9 +22,9 @@ class History : AppCompatActivity() {
         binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         binding.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         binding.webView.settings.javaScriptEnabled = true
-
-        binding.webView.loadUrl("https://z7.si/wisfi/seznam")
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val user = sharedPreferences.getString("user", null)
+        binding.webView.loadUrl("https://z7.si/wisfi/history?id=$user")
         binding.back.setOnClickListener { finish() }
-
     }
 }
