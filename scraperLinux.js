@@ -2,12 +2,12 @@ const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 
-// Poskrbi za __dirname, če ne obstaja
+// dir
 if (typeof __dirname === 'undefined') {
     global.__dirname = path.resolve();
 }
 
-async function getProductCode(ime, nacin) {
+async function getProduct(ime, nacin) {
     console.log('Zaganjam brskalnik (headless)...');
 
     const possiblePaths = [
