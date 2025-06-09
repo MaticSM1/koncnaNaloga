@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="sl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,51 +14,51 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
-        
+
 
         #map {
             height: 500px;
             margin: 20px;
             border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
-  
     </style>
 </head>
+
 <body>
 
-   
-        
-        <div id="map"></div>
-        
-   
+
+
+    <div id="map"></div>
+
+
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
         const map = L.map('map').setView([46.5574, 15.6413], 8);
-        
+
         // Dodajanje satelitskih plasti
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri, DigitalGlobe, GeoEye, Earthstar Geographics, USGS, ArcGIS',
             maxZoom: 18
         });
-        
- 
+
+
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
         });
-        
+
         satelliteLayer.addTo(map);
-        
+
         const baseLayers = {
             "Satelitski pogled": satelliteLayer,
             "Cestni zemljevid": streetLayer
         };
-        
+
         L.control.layers(baseLayers).addTo(map);
-        
+
         const marker = L.marker([46.5574, 15.6413], {
             icon: L.icon({
                 iconUrl: 'data:image/svg+xml;base64,' + btoa(`
@@ -70,29 +71,29 @@
                 popupAnchor: [0, -30]
             })
         }).addTo(map);
-        
+
         marker.bindPopup(`
             <div style="text-align: center; padding: 10px;">
                 <h4 style="margin: 0 0 10px 0; color: #2c3e50;">Hofer</h4>
 
             </div>
         `);
-        
+
         const circle = L.circle([46.5574, 15.6413], {
             color: '#e74c3c',
             fillColor: '#e74c3c',
             fillOpacity: 0.2,
             radius: 5000
         }).addTo(map);
-        
+
         setTimeout(() => {
             marker.openPopup();
         }, 1000);
-        
-        map.on('click', function(e) {
+
+        map.on('click', function (e) {
             const lat = e.latlng.lat.toFixed(4);
             const lng = e.latlng.lng.toFixed(4);
-            
+
             L.popup()
                 .setLatLng(e.latlng)
                 .setContent(`
@@ -104,7 +105,7 @@
                 `)
                 .openOn(map);
         });
-        
+
         L.control.scale({
             metric: true,
             imperial: false,
@@ -112,4 +113,5 @@
         }).addTo(map);
     </script>
 </body>
+
 </html>
