@@ -78,6 +78,7 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'register') {
         const { username, password, UUID } = JSON.parse(packet.payload.toString());
+        console.log('registracija:', username, password, UUID);
         (async () => {
             try {
                 const db = global.client.db('users');
@@ -93,12 +94,14 @@ aedes.on('publish', (packet, client) => {
                     console.log("registracija uspesna")
                     await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
                     clients[clientId] = username;
+                    console.log('Uporabnik registriran:', username);
                     aedes.publish({
                         topic: username,
                         payload: Buffer.from('ok'),
                         qos: 0,
                         retain: false
                     });
+                    
                 }
             } catch (err) {
                 console.error('Napaka pri registraciji:', err);
