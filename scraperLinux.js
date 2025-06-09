@@ -81,6 +81,16 @@ async function getProduct(ime, nacin) {
             productData = { name, price, imageSrc };
             console.log('✅ Podatki (Jager):', productData);
 
+            try {
+                const outputFileName = productCode || ime.replace(/\s+/g, '_');
+                const outputPath = path.join(outputDir, `${outputFileName}.json`);
+                fs.writeFileSync(outputPath, JSON.stringify(productData, null, 2), 'utf8');
+                console.log(`✅ Podatki shranjeni v: ${outputPath}`);
+            } catch (err) {
+                console.error('Napaka pri shranjevanju datoteke:', err);
+            }
+
+
         } catch (error) {
             console.error('Napaka pri iskanju na TrgovineJager:', error);
         }
