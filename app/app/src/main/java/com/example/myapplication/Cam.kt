@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
@@ -48,6 +49,10 @@ class Cam : AppCompatActivity() {
         setupLightSensor()
 
         binding.back.setOnClickListener { finish() }
+        binding.history.setOnClickListener{
+            val intent = Intent(this, History::class.java)
+            startActivity(intent)
+        }
 
         if (isCameraPermissionGranted()) startCamera()
         else ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
