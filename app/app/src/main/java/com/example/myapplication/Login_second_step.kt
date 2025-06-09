@@ -22,26 +22,29 @@ class Login_second_step : AppCompatActivity() {
     private var myCamera: MyCamera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         binding = ActivityLoginSecondStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        Toast.makeText(this, "Prosim počakajte", Toast.LENGTH_LONG).show()
         app = application as MyApplication
         val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         val email = sharedPreferences.getString("username", "")
         app.onMqttMessage = { topic, message ->
             if (topic == email) {
                 runOnUiThread {
-                    if(message == "ok"){
+                    if (message == "ok") {
+                        myCamera?.stop()
                         app.setUUID()
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
-                    }else{
+                    } else {
                         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
+
 
         if (isCameraPermissionGranted()) startCamera()
         else ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1)
@@ -64,6 +67,7 @@ class Login_second_step : AppCompatActivity() {
             isFrontCamera = true,
             captureIntervalMs = 500L
         ) { bitmap ->
+
             app.sendRawBytesMessage("imageRegister", bitmap)
         }
         myCamera?.startCamera()

@@ -50,8 +50,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
 
         val sharedPrefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-        val UUID = sharedPrefs.getString("UUID", null)
+        val username = sharedPrefs.getString("username", null)
 
-        binding.loginButton.text = if (UUID != null) "MAIN" else "LOG IN"
+        binding.loginButton.text = if (username != null) "MAIN" else "LOG IN"
     }
 }

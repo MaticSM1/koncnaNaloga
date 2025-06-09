@@ -52,6 +52,7 @@ class Login : AppCompatActivity() {
             if (topic == email) {
                 runOnUiThread {
                     if(message == "ok"){
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                         app.setUUID()
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
@@ -78,7 +79,6 @@ class Login : AppCompatActivity() {
         app.onMqttMessage = { topic, message ->
             if (topic == email) {
                 runOnUiThread {
-                    binding.signOrLog.text= message
                     if(message == "ok"){
                         val intent = Intent(this, Login_second_step::class.java)
                         startActivity(intent)

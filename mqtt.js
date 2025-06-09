@@ -206,6 +206,12 @@ aedes.on('publish', (packet, client) => {
             });
             console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
         } else {
+            aedes.publish({
+                    topic: clients[clientId],
+                    payload: Buffer.from('ok'),
+                    qos: 0,
+                    retain: false
+                    });
             console.log('Zasedeno');
         }
     }
