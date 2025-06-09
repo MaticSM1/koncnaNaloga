@@ -4,8 +4,8 @@ const net = require('net');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const Product = require('../models/product');
-const User = require('../models/user');
+const Product = require('./models/product');
+const User = require('./models/user');
 
 const mqttPort = 1883;
 let clients = [];

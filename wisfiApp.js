@@ -267,7 +267,7 @@ app.get(`${proxy}/seznam`, (req, res) => {
 });
 
 // ───── Vključi MQTT strežnik ─────
-let mqtt =  require('./mqtt/server.js');
+let mqtt =  require('./mqtt.js');
 
 // ───── Zaženi HTTP server ─────
 async function start() {
