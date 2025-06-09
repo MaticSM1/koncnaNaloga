@@ -12,6 +12,8 @@ let activeClients = [];
 let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
 let avtentikacija = "";
 let avtentikacijaDate = new Date();
+const bcrypt = require('bcrypt');
+
 
 let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
@@ -92,7 +94,17 @@ aedes.on('publish', (packet, client) => {
                     });
                 } else {
                     console.log("registracija uspesna")
-                    await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
+
+                    const hashedPassword = await bcrypt.hash(password, 10);
+
+
+
+                    const newUser = new User({
+                        username,
+                        password: hashedPassword,
+                        login2f: false,
+                        phoneId: UUID,
+                    });
                     clients[clientId] = username;
                     console.log('Uporabnik registriran:', username);
                     aedes.publish({
@@ -101,7 +113,7 @@ aedes.on('publish', (packet, client) => {
                         qos: 0,
                         retain: false
                     });
-                    
+
                 }
             } catch (err) {
                 console.error('Napaka pri registraciji:', err);
