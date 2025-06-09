@@ -17,7 +17,7 @@ class Login_second_step : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginSecondStepBinding
     private lateinit var app: MyApplication
-    private var cameraHelper: MyCamera? = null
+    private var myCamera: MyCamera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +30,7 @@ class Login_second_step : AppCompatActivity() {
         else ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1)
 
         binding.buttonSkip.setOnClickListener {
-            cameraHelper?.stop()
+            myCamera?.stop()
             startActivity(Intent(this, MainActivity::class.java))
         }
     }
@@ -40,7 +40,7 @@ class Login_second_step : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        cameraHelper = MyCamera(
+        myCamera = MyCamera(
             context = this,
             lifecycleOwner = this,
             previewView = binding.previewView,
@@ -49,12 +49,12 @@ class Login_second_step : AppCompatActivity() {
         ) { bitmap ->
             app.sendRawBytesMessage("imageRegister", bitmap)
         }
-        cameraHelper?.startCamera()
+        myCamera?.startCamera()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraHelper?.stop()
+        myCamera?.stop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

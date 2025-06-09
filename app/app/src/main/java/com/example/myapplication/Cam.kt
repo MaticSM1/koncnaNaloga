@@ -34,7 +34,7 @@ class Cam : AppCompatActivity() {
     private var longitude: Double? = null
     private var oldValue: String = ""
 
-    private var cameraHelper: MyCamera? = null
+    private var myCamera: MyCamera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +95,7 @@ class Cam : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        cameraHelper = MyCamera(
+        myCamera = MyCamera(
             context = this,
             lifecycleOwner = this,
             previewView = binding.previewView,
@@ -133,12 +133,12 @@ class Cam : AppCompatActivity() {
                 }
         }
 
-        cameraHelper?.startCamera()
+        myCamera?.startCamera()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraHelper?.stop()
+        myCamera?.stop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

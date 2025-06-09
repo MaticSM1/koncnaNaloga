@@ -24,6 +24,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#88FFFFFF" />
+
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4" />
+
     <Button
         android:id="@+id/back"
         android:layout_width="130dp"
@@ -36,18 +49,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintVertical_bias="0.95" />
-
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="258dp"
-        android:layout_height="559dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.4"
-        />
 
 
 

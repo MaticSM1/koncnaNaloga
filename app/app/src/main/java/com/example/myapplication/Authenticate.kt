@@ -17,7 +17,7 @@ class Authenticate : AppCompatActivity() {
 
     private lateinit var binding: ActivityAuthenticateBinding
     private lateinit var app: MyApplication
-    private lateinit var cameraHelper: MyCamera
+    private lateinit var myCamera: MyCamera
 
     private var isWaitingForResponse = false
     private var hasReceivedResponse = false
@@ -50,7 +50,7 @@ class Authenticate : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        cameraHelper = MyCamera(
+        myCamera = MyCamera(
             context = this,
             lifecycleOwner = this,
             previewView = binding.previewView,
@@ -65,7 +65,7 @@ class Authenticate : AppCompatActivity() {
         }
 
 
-        cameraHelper.startCamera()
+        myCamera.startCamera()
     }
 
 
@@ -85,7 +85,7 @@ class Authenticate : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraHelper.stop()
+        myCamera.stop()
         app.onMqttMessage = null
     }
 }
