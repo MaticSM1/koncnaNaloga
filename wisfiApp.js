@@ -28,7 +28,7 @@ let avtentikacijaDate = new Date();
 const app = express();
 const port = 3000;
 let proxy = process.env.PROXY || "/wisfi";
-if (proxy == "ne") poxy = "";
+if (proxy == "ne") proxy = "";
 
 // MongoDB povezava
 const uri = process.env.MONGO_URI || "VNESI URI MONGODB!!!";
