@@ -8,10 +8,10 @@ if (typeof __dirname === 'undefined') {
 
 async function getProductCode(ime) {
     console.log('Zaganjam brskalnik (headless)...');
-const browser = await puppeteer.launch({
-    headless: false, // prikaz
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
+    const browser = await puppeteer.launch({
+        headless: false, // prikaz
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
 
     const page = await browser.newPage();
@@ -20,7 +20,7 @@ const browser = await puppeteer.launch({
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
     );
 
-    console.log(`Odpiram iskalno stran za "${ime}"...`);
+    console.log(`stran za "${ime}"...`);
     await page.goto(`https://veskajjes.si/component/finder/search?q=${ime}`, { waitUntil: 'networkidle2' });
 
     try {
@@ -30,12 +30,11 @@ const browser = await puppeteer.launch({
         await page.click('.bcms-cookies-btn--accept');
         await page.waitForTimeout(1000);
     } catch (e) {
-        console.log('Banner za piškotke ni bil prikazan.');
+        console.log('Ni piskotov.');
     }
 
 
-    
-    console.log('Čakam na prikaz šifre produkta...');
+
     await page.waitForSelector('.arttitle', { timeout: 10000 });
 
     const name2 = (await page.$eval('.arttitle', el => el.textContent.trim())).replace(/\s+/g, '').trim();
@@ -73,6 +72,6 @@ const browser = await puppeteer.launch({
     return true
 }
 
- getProductCode("3831040002047");
+getProductCode("3831040002047");
 
 module.exports = { getProductCode };

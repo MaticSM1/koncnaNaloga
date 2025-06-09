@@ -9,10 +9,8 @@
   <button onclick="publishMessage()">Pošlji sporočilo</button>
 
   <script>
-    // Ustvari MQTT odjemalca
     const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "clientId" + Math.random());
 
-    // Ko se poveže
     client.onConnectionLost = (responseObject) => {
       console.log("Povezava izgubljena: " + responseObject.errorMessage);
     };

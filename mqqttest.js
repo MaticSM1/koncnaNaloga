@@ -24,7 +24,7 @@ client.on('message', (topic, message) => {
     client.end();
 });
 
-   
+
 client.on('error', (err) => {
     console.error('Napaka:', err);
     client.end();

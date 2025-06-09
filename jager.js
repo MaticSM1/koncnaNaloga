@@ -52,12 +52,11 @@ async function getProductCode(ime) {
     const productUrl = await page.evaluate(a => a.href, itemBox);
     console.log('✅ Povezava prvega izdelka:', productUrl);
 
-    // Odpri stran izdelka
-    console.log(`Odpiram stran izdelka: ${productUrl}`);
+    console.log(`stran izdelka: ${productUrl}`);
     await page.goto(productUrl, { waitUntil: 'networkidle2' });
 
-    // Počakaj na šifro produkta
-    console.log('Čakam na prikaz šifre produkta...');
+    // šifra produkta
+    console.log('šifre produkta...');
     await page.waitForSelector('.prod-number', { timeout: 10000 });
 
     const productCode = (await page.$eval('.prod-number', el => el.textContent.trim())).replace(/\s+/g, '').trim();
@@ -67,7 +66,7 @@ async function getProductCode(ime) {
     const imageSrc = await page.$eval('.slider-image img', img => img.src);
     const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
 
-    console.log('✅ Šifra produkta:', productCode);
+    console.log('✅:', productCode);
 
     await browser.close();
 
@@ -80,11 +79,11 @@ async function getProductCode(ime) {
     }
 
     fs.writeFileSync(outputPath, JSON.stringify({ name, price, imageSrc }, null, 2), 'utf8');
-    console.log(`✅ Podatki shranjeni v: ${outputPath}`);
+    console.log(`✅: ${outputPath}`);
 
     return productCode.split(":")[1];
 }
 
- getProductCode("mleko");
+getProductCode("mleko");
 
 module.exports = { getProductCode };
