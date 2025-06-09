@@ -43,7 +43,7 @@ aedes.on('publish', (packet, client) => {
     if (!packet.topic || packet.topic.startsWith('$SYS')) return;
 
     const clientId = client ? client.id : 'neznano';
-    const dataDir = path.join(__dirname, 'sites/public/data');
+    const dataDir = path.join(__dirname, '../sites/public/data');
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
     switch (packet.topic) {
@@ -137,7 +137,7 @@ async function handleUUID(packet, clientId) {
 }
 
 function handleImageRegister(packet, clientId) {
-    const inputDir = path.join(__dirname, 'orv/input');
+    const inputDir = path.join(__dirname, '../orv/input');
     if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 
     if (trenutnaRegistracija.id == "") {
@@ -155,14 +155,14 @@ function handleImageRegister(packet, clientId) {
 }
 
 function handleImageLogin(packet, clientId) {
-    const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
+    const inputLoginDir = path.join(__dirname, '../orv/inputLogin');
     if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
 
     const imagePath = path.join(inputLoginDir, `test.jpg`);
     fs.writeFileSync(imagePath, packet.payload);
 
-    const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
-    const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+    const scriptPath = path.join(__dirname, '../orv', 'testServer.py');
+    const pythonCmd = fs.existsSync('../usr/bin/python3') ? 'python3' : 'python';
     const process = exec(`${pythonCmd} "${scriptPath}"`);
 
     process.stdout.on('data', (data) => {
