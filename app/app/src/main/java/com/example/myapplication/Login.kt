@@ -51,7 +51,6 @@ class Login : AppCompatActivity() {
         app.onMqttMessage = { topic, message ->
             if (topic == email) {
                 runOnUiThread {
-                    binding.signOrLog.text= message
                     if(message == "ok"){
                         app.setUUID()
                         val intent = Intent(this, MainActivity::class.java)

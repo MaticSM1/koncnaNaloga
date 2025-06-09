@@ -1,11 +1,13 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -25,6 +27,21 @@ class Login_second_step : AppCompatActivity() {
         setContentView(binding.root)
 
         app = application as MyApplication
+        val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        val email = sharedPreferences.getString("username", "")
+        app.onMqttMessage = { topic, message ->
+            if (topic == email) {
+                runOnUiThread {
+                    if(message == "ok"){
+                        app.setUUID()
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                    }else{
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
 
         if (isCameraPermissionGranted()) startCamera()
         else ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 1)

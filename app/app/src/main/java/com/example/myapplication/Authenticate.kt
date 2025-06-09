@@ -60,7 +60,7 @@ class Authenticate : AppCompatActivity() {
             if (!isWaitingForResponse) {
                 isWaitingForResponse = true
                 hasReceivedResponse = false
-                app.sendRawBytesMessage("Registerimage", bitmap)
+                app.sendRawBytesMessage("imageLogin", bitmap)
             }
         }
 
