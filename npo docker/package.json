@@ -1,0 +1,19 @@
+{
+  "name": "mqtt-server-app",
+  "version": "1.0.0",
+  "description": "MQTT server z registracijo, prijavo in slikami",
+  "main": "mqqt.js",
+  "scripts": {
+    "start": "node mqqt.js"
+  },
+  "dependencies": {
+    "aedes": "^0.48.0",
+    "bcrypt": "^5.1.0",
+    "mongodb": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Tvoje ime",
+  "license": "ISC"
+}
