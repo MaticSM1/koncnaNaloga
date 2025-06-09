@@ -236,7 +236,7 @@ app.get(`${proxy}/history`, async (req, res) => {
         if (!user) {
             return res.status(404).send('User not found');
         }
-        const productNames = user.products.map(product => product.qrcode);
+        const productNames = user.products
         console.log(productNames);
         res.render('zgodovina', { productNames });
     } catch (err) {
@@ -660,9 +660,9 @@ aedes.on('publish', (packet, client) => {
             console.log('Product saved:', savedProduct);
 
             return User.findOneAndUpdate(
-                { username: user },                  // query objekt
-                { $push: { products: savedProduct._id } }, // push ID produkta
-                { new: true }                        // vrni posodobljen dokument
+                { username: user },
+                { $push: { products: savedProduct._id } },
+                { new: true }
             );
         })
         .then(updatedUser => {
