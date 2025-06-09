@@ -245,6 +245,32 @@ app.get(`${proxy}/history`, async (req, res) => {
     }
 });
 
+app.get(`${proxy}/shopingListAdd`, async (req, res) => {
+    const { id } = req.query;
+
+    try {
+        const user = await User.findOne({ username: id }).populate('products');
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const product = await Product.findOne({ name: productName });
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        const alreadyInList = user.list.some(p => p._id.equals(product._id));
+        if (!alreadyInList) {
+            user.list.push(product._id);
+            await user.save();
+        }
+
+        res.send("Product added to user's list");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
 
 
 app.get(`${proxy}/zemljevid`, (req, res) => {
@@ -254,6 +280,7 @@ app.get(`${proxy}/zemljevid`, (req, res) => {
 app.get(`/wisfi`, (req, res) => {
     res.redirect('/');
 });
+
 
 app.get(`${proxy}/run`, (req, res) => {
     const process = exec('python3 orv/testServer.py');

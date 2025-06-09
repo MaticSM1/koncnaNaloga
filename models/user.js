@@ -21,6 +21,10 @@ const UserSchema = new mongoose.Schema({
     products: [{
         type: String,
         ref: 'Product'
+    }],
+    list: [{
+        type: String,
+        ref: 'Product'
     }]
 });
 
