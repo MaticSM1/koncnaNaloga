@@ -642,38 +642,43 @@ aedes.on('publish', (packet, client) => {
 
 
     if (packet.topic === 'QR') {
-    try {
-        const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-        console.log(qr, lat, lon, light);
+  try {
+    const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
+    console.log(qr, lat, lon, light);
 
-        const newProduct = new Product({
-            qrcode: qr,
-            latitude: lat,
-            longitude: lon,
-            light: light
-        });
+    const newProduct = new Product({
+        qrcode: qr,
+        latitude: lat,
+        longitude: lon,
+        light: light
+    });
 
-        const user = clients[clientId];
+    const user = clients[clientId];
 
-        newProduct.save()
-            .then(savedProduct => {
-                console.log('Product saved:', savedProduct);
+    newProduct.save()
+        .then(savedProduct => {
+            console.log('Product saved:', savedProduct);
 
-                return User.findByIdAndUpdate(
-                    user,
-                    { $push: { products: savedProduct.id } },
-                    { new: true }
-                );
-            })
-            .then(updatedUser => {
+            return User.findOneAndUpdate(
+                { username: user },                  // query objekt
+                { $push: { products: savedProduct._id } }, // push ID produkta
+                { new: true }                        // vrni posodobljen dokument
+            );
+        })
+        .then(updatedUser => {
+            if (updatedUser) {
                 console.log('Product ID added to user:', updatedUser.username);
-            })
-            .catch(err => {
-                console.error('Error:', err);
-            });
-    } catch (err) {
-        console.error('Failed to parse packet payload:', err);
-    }
+            } else {
+                console.log('User not found');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+} catch (err) {
+    console.error('Failed to parse packet payload:', err);
+}
+
 }
 
 
