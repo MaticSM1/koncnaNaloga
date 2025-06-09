@@ -121,13 +121,13 @@
                             card.className = 'product-card';
                             card.onclick = () => viewProduct(data.name || '');
                             card.innerHTML = `
-                        <div class="product-image">${data.emoji || '🛒'}</div>
+                        <div class="product-image">
+                            ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:100px;height:100px;object-fit:contain;">` : (data.emoji || '🛒')}
+                        </div>
                         <div class="product-info">
-                            <div class="product-name">${data.name || 'Neznan izdelek'}</div>
-                            <div class="product-brand">${data.brand || 'Neznana blagovna znamka'}</div>
-                            <div class="product-ingredients">
-                                Glavne sestavine: ${data.ingredients ? data.ingredients.join(', ') : 'Ni podatkov'}
-                            </div>
+                            <div class="product-name">${data.name || data.name2 || 'Neznan izdelek'}</div>
+                            <div class="product-brand">${data.price ? data.price + ' €' : ''}</div>
+
                         </div>
                     `;
                             carousel.appendChild(card);
@@ -186,6 +186,8 @@
         }
 
         function searchProduct() {
+                                    document.getElementById('new-show').style.display = 'block';
+
             const searchTerm = document.getElementById('searchInput').value;
             if (searchTerm.trim()) {
                 fetch(`/wisfi/getItems?name=${encodeURIComponent(searchTerm)}`)
@@ -198,13 +200,11 @@
                                 .then(res => res.json())
                                 .then(details => {
                                     console.log(details);
-                                    document.getElementById('new-show').style.display = 'block';
                                     if (details.imageSrc) {
                                         document.getElementById('new-show-img').innerHTML = `<img src="${details.imageSrc}" alt="${details.name || ''}" style="width:100%;height:100%;object-fit:contain;">`;
                                     }
                                     document.getElementById('new-show-name').textContent = details.name || 'Neznan izdelek';
-                                    document.getElementById('new-show-name2').textContent = details.price || 'Neznana blagovna znamka';
-
+                                    document.getElementById('new-show-name2').textContent = details.price || 'Neznana cena';
                                 })
                                 .catch(err => {
                                     alert('Napaka pri pridobivanju podrobnosti izdelka.');
