@@ -115,6 +115,7 @@
     </div>
     
 <% 
+if (data.data) {
 const raw = data.data;
 
 const energija = raw.match(/Energijskavrednost([\d\/kJkcal\s]+)/)?.[1]?.trim();
@@ -162,7 +163,7 @@ const sol = raw.match(/Sol([\d\.]+)g/)?.[1];
         <span class="info-label">Sol</span>
         <%= sol %>g
     </div>
-    <% } %>
+    <% }} %>
 </div>
 
 </body>
