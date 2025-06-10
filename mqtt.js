@@ -146,8 +146,8 @@ aedes.on('publish', (packet, client) => {
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
                     if (UUID) {
-                        await db.collection('users').updateOne(
-                            { email: username },
+                        await User.updateOne(
+                            { username: username },
                             { $set: { phoneId: UUID } }
                         );
                     }
@@ -184,7 +184,6 @@ aedes.on('publish', (packet, client) => {
         console.log('UUID:', UUID);
         (async () => {
             try {
-                const db = global.client.db('users');
                 const user = await User.findOne({ phoneId: UUID });
                 if (user) {
                     clients[clientId] = user.username;
