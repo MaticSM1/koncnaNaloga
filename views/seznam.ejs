@@ -287,11 +287,8 @@
     </div>
 
 <script>
-    // Parsiraj EJS podatke v JS
     let shopIteams = JSON.parse(`<%- JSON.stringify(shopNames || []) %>`);
     console.log("Raw input:", shopIteams);
-
-    // Pretvori nize v objekte, če je potrebno
     let items = Array.isArray(shopIteams)
         ? shopIteams.map((item, index) => {
             if (typeof item === 'string') {
@@ -301,7 +298,7 @@
                     completed: false
                 };
             } else {
-                return item; // že je objekt
+                return item;
             }
         })
         : [];
@@ -309,8 +306,13 @@
     console.log("First item:", items[0]);
     console.log("Parsed items:", items);
 
-    // Pravilna inicializacija ID-jev
-    let nextId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+    let nextId;
+    if (items.length === 0) {
+        nextId = 1;
+    } else {
+        const maxId = Math.max(...items.map(item => item.id));
+        nextId = maxId + 1;
+    }
 
     const itemInput = document.getElementById('itemInput');
     const addButton = document.getElementById('addButton');
@@ -325,14 +327,12 @@ function addItem() {
     const text = itemInput.value.trim();
     if (text === '') return;
 
-    // Nova postavka
     const newItem = {
         id: nextId++,
         text: text,
         completed: false
     };
 
-    // Pošljemo POST zahtevku na strežnik za shranjevanje
     fetch('/seznamAddItem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -340,10 +340,9 @@ function addItem() {
     })
     .then(response => {
         if (response.ok) {
-            // Če uspešno, dodamo lokalno in rerender
             items.push(newItem);
             render();
-            itemInput.value = ''; // počistimo input
+            itemInput.value = '';
         } else {
             console.error('Napaka pri dodajanju na strežnik');
         }
