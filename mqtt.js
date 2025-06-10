@@ -15,7 +15,7 @@ let avtentikacijaDate = new Date();
 const bcrypt = require('bcrypt');
 
 
-let steviloAktivnih1 = 0; // enostaven način
+let steviloAktivnih1 = 0; // enostaven načinneki ne dela
 let steviloAktivnih2 = 0; // naš način
 
 const mqttServer = net.createServer(aedes.handle);
