@@ -14,6 +14,14 @@ let avtentikacija = "";
 let avtentikacijaDate = new Date();
 const bcrypt = require('bcrypt');
 
+let ws;
+try {
+    ws = require("./ws.js")
+    ws.createWebSocketServer(8077);
+}
+catch (e) {
+    console.error("Napaka ws.js:", e);
+}
 
 let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
@@ -105,7 +113,7 @@ aedes.on('publish', (packet, client) => {
                         login2f: false,
                         phoneId: UUID,
                     });
-                                        await newUser.save();
+                    await newUser.save();
 
                     clients[clientId] = username;
                     console.log('Uporabnik registriran:', username);
@@ -138,8 +146,8 @@ aedes.on('publish', (packet, client) => {
                 const user = await db.collection('users').findOne({ email: username });
                 if (user && user.password === password) {
                     if (UUID) {
-                        await db.collection('users').updateOne(
-                            { email: username },
+                        await User.updateOne(
+                            { username: username },
                             { $set: { phoneId: UUID } }
                         );
                     }
@@ -176,11 +184,10 @@ aedes.on('publish', (packet, client) => {
         console.log('UUID:', UUID);
         (async () => {
             try {
-                const db = global.client.db('users');
-                const user = await db.collection('users').findOne({ phoneId: UUID });
+                const user = await User.findOne({ phoneId: UUID });
                 if (user) {
-                    clients[clientId] = user.email;
-                    console.log('Najden uporabnik:', user.email);
+                    clients[clientId] = user.username;
+                    console.log('Najden uporabnik:', user.username);
                     aedes.publish({
                         topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
@@ -315,8 +322,26 @@ aedes.on('publish', (packet, client) => {
                 .catch(err => {
                     console.error('Error:', err);
                 });
+
+
+            try {
+                if (ws && ws.broadcastToAll) {
+                    ws.broadcastToAll(JSON.stringify({
+                        type: 'qr',
+                        data: {
+                            qrcode: qr,
+                            latitude: lat,
+                            longitude: lon,
+                            light: light
+                        }
+                    }));
+                }
+            } catch (e) {
+                console.error('Napaka ws', e);
+            }
+
         } catch (err) {
-            console.error('Failed to parse packet payload:', err);
+            console.error('Napaka sprejema', err);
         }
 
     }
