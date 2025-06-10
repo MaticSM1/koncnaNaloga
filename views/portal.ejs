@@ -25,8 +25,6 @@
             </nav>
         </header>
 
-
-
         <main>
             <section class="search-section">
                 <h1 class="search-title">Poiščite izdelek</h1>
@@ -49,8 +47,6 @@
                         <div id="new-show-name" class="product-name" style="font-size: 2rem;"></div>
                         <div id="new-show-name2" class="product-brand"
                             style="font-size: 1.1rem; margin-bottom: 1.2rem;"></div>
-                    
-
                     </div>
                 </div>
             </section>
@@ -135,11 +131,6 @@
 
         });
 
-
-
-
-
-
         let currentSlide = 0;
         const carousel = document.getElementById('carousel');
         const dots = document.querySelectorAll('.dot');
@@ -149,11 +140,6 @@
         let cardsPerView = window.innerWidth <= 768 ? 1 : 3;
         const totalCards = 6;
         let maxSlides = Math.max(0, totalCards - cardsPerView);
-
-
-
-
-
 
 
         function slideCarousel(direction) {
@@ -166,8 +152,6 @@
             } else {
                 currentSlide = newSlide;
             }
-
-
         }
 
         function goToSlide(slideIndex) {
@@ -178,7 +162,7 @@
         }
 
         function searchProduct() {
-                                    document.getElementById('new-show').style.display = 'block';
+            document.getElementById('new-show').style.display = 'block';
 
             const searchTerm = document.getElementById('searchInput').value;
             if (searchTerm.trim()) {
@@ -233,8 +217,33 @@
             currentSlide = Math.min(currentSlide, maxSlides);
         });
 
+
+
+
+
         setTimeout(() => {
         }, 100);
+
+
+
+        const ws = new WebSocket('ws://localhost:8077');
+
+        ws.onopen = function() {
+            console.log('WebSocket povezava vzpostavljena.');
+        };
+
+        ws.onmessage = function(event) {
+            console.log('Prejeto sporočilo prek WebSocket:', event.data);
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket napaka:', error);
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket povezava zaprta.');
+        };
+
     </script>
 </body>
 

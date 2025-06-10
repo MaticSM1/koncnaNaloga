@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const Product = require('./models/product');
 const User = require('./models/user');
 
-const mqttPort = 1883;
+const mqttPort = 1888;
 let clients = [];
 let activeClients = [];
 let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
@@ -14,6 +14,14 @@ let avtentikacija = "";
 let avtentikacijaDate = new Date();
 const bcrypt = require('bcrypt');
 
+let ws;
+try {
+    ws = require("./ws.js")
+    ws.createWebSocketServer(8077);
+}
+catch (e) {
+    console.error("Napaka ws.js:", e);
+}
 
 let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
@@ -105,7 +113,7 @@ aedes.on('publish', (packet, client) => {
                         login2f: false,
                         phoneId: UUID,
                     });
-                                        await newUser.save();
+                    await newUser.save();
 
                     clients[clientId] = username;
                     console.log('Uporabnik registriran:', username);
@@ -315,8 +323,26 @@ aedes.on('publish', (packet, client) => {
                 .catch(err => {
                     console.error('Error:', err);
                 });
+
+
+            try {
+                if (ws && ws.broadcastToAll) {
+                    ws.broadcastToAll(JSON.stringify({
+                        type: 'qr',
+                        data: {
+                            qrcode: qr,
+                            latitude: lat,
+                            longitude: lon,
+                            light: light
+                        }
+                    }));
+                }
+            } catch (e) {
+                console.error('Napaka ws', e);
+            }
+
         } catch (err) {
-            console.error('Failed to parse packet payload:', err);
+            console.error('Napaka sprejema', err);
         }
 
     }
