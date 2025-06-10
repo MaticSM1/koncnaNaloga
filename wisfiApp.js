@@ -276,7 +276,7 @@ app.get(`${proxy}/seznam`, async (req, res) => {
     }
 });
 
-app.post('/seznamRemoveItem', async (req, res) => {
+app.post(`${proxy}/seznamRemoveItem`, async (req, res) => {
     const { itemname } = req.body;
     const username = req.session.email;
     console.log(itemname)
@@ -295,7 +295,7 @@ app.post('/seznamRemoveItem', async (req, res) => {
     }
 });
 
-app.post('/seznamAddItem', async (req, res) => {
+app.post(`${proxy}/seznamAddItem`, async (req, res) => {
     const { itemname } = req.body;
     const username = req.session.email;
 
