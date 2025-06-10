@@ -44,7 +44,7 @@
                     <span>WISFI - Kaj je v hrani</span>
                 </div>
                 <div class="nav-links">
-                    <a href="/wisfi/seznam">Zemljevid</a>
+                    <a href="/wisfi/seznam">Seznam</a>
                     <a href="/wisfi/zemljevid">Zemljevid</a>
                     <a href="/wisfi/public/kontakt.html">Kontakt</a>
                     <a href="/wisfi/public/kontakt.html">Api</a>
@@ -97,15 +97,7 @@
         });
 
 
-
-
-       
-
-
-
-
-
-        const map = L.map('map').setView([46.5574, 15.6413], 8);
+        const map = L.map('map').setView([46.5574, 15.6413], 13);
 
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; Esri, DigitalGlobe, GeoEye, Earthstar Geographics, USGS, ArcGIS',

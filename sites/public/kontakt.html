@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontakt - Kaj je v hrani</title>
-    <link rel="stylesheet" href="/public/main.css">
+    <link rel="stylesheet" href="/wisfi/public/main.css">
 </head>
 
 <body>
@@ -56,17 +56,22 @@
     </div>
 
     <script>
-        function handleContact(event) {
+        async function handleContact(event) {
             event.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const message = document.getElementById('message').value;
-
-            if (name && email && message) {
-                alert('Vaše sporočilo je bilo poslano. Hvala za vaš kontakt!');
-                // Tu bi poslali podatke na strežnik
-            } else {
-                alert('Prosimo, izpolnite vsa polja.');
+            try {
+                const response = await fetch(`https://z7.si/sporocilo?sporocilo=${encodeURIComponent(message)}`);
+                if (response.ok) {
+                    alert('Sporočilo uspešno poslano!');
+                    document.querySelector('.contact-form').reset();
+                } else {
+                    alert('Prišlo je do napake pri pošiljanju sporočila. Prosim poskusite kasneje.');
+                }
+            } catch (error) {
+                console.error('Napaka pri pošiljanju sporočila:', error);
+                alert('Prišlo je do napake pri pošiljanju sporočila. Prosim poskusite kasneje.');
             }
         }
     </script>
