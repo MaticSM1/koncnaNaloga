@@ -25,8 +25,8 @@ class Login_second_step : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         binding = ActivityLoginSecondStepBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
-        Toast.makeText(this, "Prosim počakajte", Toast.LENGTH_LONG).show()
         app = application as MyApplication
         val sharedPreferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         val email = sharedPreferences.getString("username", "")
@@ -84,4 +84,9 @@ class Login_second_step : AppCompatActivity() {
             startCamera()
         }
     }
+    override fun onResume() {
+        super.onResume()
+        Toast.makeText(this, "Prosim počakajte", Toast.LENGTH_LONG).show()
+    }
+
 }
