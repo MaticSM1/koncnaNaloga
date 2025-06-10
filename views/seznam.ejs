@@ -334,7 +334,7 @@ function addItem() {
         completed: false
     };
 
-    fetch('/seznamAddItem', {
+    fetch('/wisfi/seznamAddItem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemname: newItem.text })
@@ -359,7 +359,7 @@ function deleteItem(id) {
     const item = items.find(item => item.id === id);
     if (!item) return;
 
-    fetch('/seznamRemoveItem', {
+    fetch('/wisfi/seznamRemoveItem', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
