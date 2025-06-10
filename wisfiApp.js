@@ -47,29 +47,28 @@ try {
 global.client = client;
 
 const mongoose = require('mongoose');
-const user = require('./models/user.js');
 
 async function run() {
     try {
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB native client povezan");
+        console.log("MongoDB povezan");
 
         await mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        console.log("✅ Mongoose povezan");
+        console.log("MongoDB povezan");
     } catch (err) {
-        console.error("❌ Napaka pri povezovanju:", err);
+        console.error("Napkaka pri povezavi mongo:", err);
     }
 }
 run().catch(console.dir);
 
-// Middleware
+
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET ||"Ni nastavljen",
+    secret: process.env.SESSION_SECRET || "Ni nastavljen",
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
@@ -128,9 +127,26 @@ app.get(`${proxy}/ping`, (req, res) => {
 app.get(`${proxy}/logout`, (req, res) => {
     req.session.destroy(err => {
         if (err) return res.status(500).send('Napaka pri odjavi');
-        res.redirect('/');
+        res.redirect(`/${proxy}/`);
     });
 });
+
+app.get(`${proxy}/deliteAcc`, (req, res) => {
+    if (!req.session.email) {
+        return res.status(401).send('Niste prijavljeni');
+    }
+    User.deleteOne({ username: req.session.email }, (err) => {
+        if (err) {
+            console.error('Napaka pri brisanju računa:', err);
+            return res.status(500).send('Napaka pri brisanju računa');
+        }
+        req.session.destroy(err => {
+            if (err) return res.status(500).send('Napaka pri odjavi');
+            res.redirect(`/${proxy}/`);
+        });
+    })
+});
+
 
 app.post(`${proxy}/register`, async (req, res) => {
     const { username, password } = req.body;
@@ -143,7 +159,7 @@ app.post(`${proxy}/register`, async (req, res) => {
         if (existingUser)
             return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
 
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 je "salt rounds"
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
         const newUser = new User({
             username,
@@ -307,7 +323,6 @@ app.post(`${proxy}/seznamAddItem`, async (req, res) => {
         const user = await User.findOne({ username: username });
         if (!user) return res.status(404).send('User not found');
 
-        // Prepreči podvajanje
         if (!user.shopIteams.includes(itemname)) {
             user.shopIteams.push(itemname);
             await user.save();
@@ -329,13 +344,13 @@ app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
     try {
         const user = await User.findOne({ username: username });
         if (!user) {
-            return res.status(404).send('User not found');d
+            return res.status(404).send('Uporabnik ne obstaja'); d
         }
         console.log(name)
         user.shopIteams.push(name);
         await user.save();
 
-        res.send('Item added to shopping list');
+        res.send('Idzelek dodan na list');
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
@@ -442,7 +457,10 @@ app.get(`${proxy}/d`, (req, res) => {
 app.get(`${proxy}/nastavitve`, (req, res) => {
     if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
-        res.render('nastavitve', {}, (err, html) => {
+        if (!req.session.login2f) {
+            req.session.login2f = false;
+        }
+        res.render('nastavitve', { login2f: req.session.login2f }, (err, html) => {
             if (err) {
                 console.error('Napka nastavitve:', err);
                 return res.status(500).send('Napaka pri nalaganju strani');
@@ -492,8 +510,6 @@ app.post(`${proxy}/izklopi2f`, async (req, res) => {
         res.status(500).json({ message: 'Napaka strežnika', error: err.message });
     }
 });
-
-
 
 
 app.listen(port, () => {
