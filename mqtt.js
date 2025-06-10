@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const Product = require('./models/product');
 const User = require('./models/user');
 
-const mqttPort = 1888;
+const mqttPort = 1883;
 let clients = [];
 let activeClients = [];
 let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
@@ -187,8 +187,8 @@ aedes.on('publish', (packet, client) => {
                 const db = global.client.db('users');
                 const user = await db.collection('users').findOne({ phoneId: UUID });
                 if (user) {
-                    clients[clientId] = user.email;
-                    console.log('Najden uporabnik:', user.email);
+                    clients[clientId] = user.username;
+                    console.log('Najden uporabnik:', user.username);
                     aedes.publish({
                         topic: UUID.substring(0, 5),
                         payload: Buffer.from('ok'),
