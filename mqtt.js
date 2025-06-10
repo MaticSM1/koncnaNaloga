@@ -185,7 +185,7 @@ aedes.on('publish', (packet, client) => {
         (async () => {
             try {
                 const db = global.client.db('users');
-                const user = await db.collection('users').findOne({ phoneId: UUID });
+                const user = await User.findOne({ phoneId: UUID }, '_id username');
                 if (user) {
                     clients[clientId] = user.username;
                     console.log('Najden uporabnik:', user.username);
