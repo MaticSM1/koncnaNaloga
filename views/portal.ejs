@@ -87,50 +87,48 @@
             }
         }
 
-        arrProducts.forEach((product, index) => {
-            console.log('Izdelek:', product);
+        function renderRecentProducts() {
+            arrProducts.forEach((product, index) => {
+                console.log('Izdelek:', product);
 
-
-            fetch(`/wisfi/public/data/${product}.json`)
-                .then(response => {
-                    if (!response.ok) {
-                        return null;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    try {
-                        console.log('Podrobnosti izdelka:', data);
-
-                        const carouselWrapper = document.getElementById('carousel-wrapper');
-                        const carousel = document.getElementById('carousel');
-                        if (carousel) {
-
-                            const card = document.createElement('div');
-                            card.className = 'product-card';
-                            card.onclick = () => viewProduct(data.name || '');
-                            card.innerHTML = `
-                        <div class="product-image">
-                            ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:90%;height:90%;object-fit:contain;">` : (data.emoji || '🛒')}
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">${data.name || data.name2 || 'Neznan izdelek'}</div>
-                            <div class="product-brand">${data.price ? data.price + ' €' : ''}</div>
-
-                        </div>
-                    `;
-                            carousel.appendChild(card);
+                fetch(`/wisfi/public/data/${product}.json`)
+                    .then(response => {
+                        if (!response.ok) {
+                            return null;
                         }
-                    } catch (e) {
-                        console.error('Napaka pri čiščenju imena izdelka:', e);
-                    }
+                        return response.json();
+                    })
+                    .then(data => {
+                        try {
+                            console.log('Podrobnosti izdelka:', data);
 
-                })
-                .catch(err => {
-                    console.error('Napaka pri pridobivanju podrobnosti izdelka:', err);
-                });
+                            const carousel = document.getElementById('carousel');
+                            if (carousel) {
+                                const card = document.createElement('div');
+                                card.className = 'product-card';
+                                card.onclick = () => viewProduct(data.name || '');
+                                card.innerHTML = `
+                                    <div class="product-image">
+                                        ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:90%;height:90%;object-fit:contain;">` : (data.emoji || '🛒')}
+                                    </div>
+                                    <div class="product-info">
+                                        <div class="product-name">${data.name || data.name2 || 'Neznan izdelek'}</div>
+                                        <div class="product-brand">${data.price ? data.price + ' €' : ''}</div>
+                                    </div>
+                                `;
+                                carousel.appendChild(card);
+                            }
+                        } catch (e) {
+                            console.error('Napaka pri čiščenju imena izdelka:', e);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Napaka pri pridobivanju podrobnosti izdelka:', err);
+                    });
+            });
+        }
 
-        });
+        renderRecentProducts();
 
         let currentSlide = 0;
         const carousel = document.getElementById('carousel');
@@ -219,30 +217,25 @@
         });
 
 
-
-
-
-        setTimeout(() => {
-        }, 100);
-
-
-
         const ws = new WebSocket('ws://localhost:8077');
 
-        ws.onopen = function() {
-            console.log('WebSocket povezava vzpostavljena.');
+        ws.onopen = function () {
+            console.log('ws poevazn.');
         };
 
-        ws.onmessage = function(event) {
-            console.log('Prejeto sporočilo prek WebSocket:', event.data);
+        ws.onmessage = function (event) {
+            console.log('ws::', event.data);
+            const data = JSON.parse(event.data);
+            products.push(data)
+            renderRecentProducts();
         };
 
-        ws.onerror = function(error) {
-            console.error('WebSocket napaka:', error);
+        ws.onerror = function (error) {
+            console.error('ws napaka:', error);
         };
 
-        ws.onclose = function() {
-            console.log('WebSocket povezava zaprta.');
+        ws.onclose = function () {
+            console.log('ws zaprt');
         };
 
     </script>
