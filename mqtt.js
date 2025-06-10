@@ -15,7 +15,7 @@ let avtentikacijaDate = new Date();
 const bcrypt = require('bcrypt');
 
 
-let steviloAktivnih1 = 0; // enostaven načinneki ne dela
+let steviloAktivnih1 = 0; // enostaven način
 let steviloAktivnih2 = 0; // naš način
 
 const mqttServer = net.createServer(aedes.handle);
@@ -105,7 +105,7 @@ aedes.on('publish', (packet, client) => {
                         login2f: false,
                         phoneId: UUID,
                     });
-                    await newUser.save();
+                                        await newUser.save();
 
                     clients[clientId] = username;
                     console.log('Uporabnik registriran:', username);
