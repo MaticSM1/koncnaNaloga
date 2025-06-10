@@ -1,10 +1,13 @@
-version: '3.8'
+version: '3'
 services:
-  app:
-    build: .
+  orv:
+    build: ./frontend
     ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
