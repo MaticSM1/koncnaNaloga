@@ -68,7 +68,7 @@ async function getProduct(ime, source = 'jager') {
                 await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
                 await page.click('.bcms-cookies-btn--accept');
                 await page.waitForTimeout(1000);
-            } catch {}
+            } catch { }
 
             await page.waitForSelector('.item-box a', { timeout: 10000 });
             const productUrl = await page.$eval('.item-box a', a => a.href);
@@ -106,7 +106,7 @@ async function getProduct(ime, source = 'jager') {
                 await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
                 await page.click('.bcms-cookies-btn--accept');
                 await page.waitForTimeout(1000);
-            } catch {}
+            } catch { }
 
             await page.waitForSelector('.arttitle', { timeout: 10000 });
             const name2 = (await page.$eval('.arttitle', el => el.textContent.trim())).replace(/\s+/g, '');
@@ -119,7 +119,7 @@ async function getProduct(ime, source = 'jager') {
                 try {
                     existingData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
                     if (typeof existingData !== 'object' || Array.isArray(existingData)) existingData = {};
-                } catch {}
+                } catch { }
             }
 
             existingData.name2 = name2;

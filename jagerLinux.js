@@ -9,7 +9,7 @@ if (typeof __dirname === 'undefined') {
 
 async function getProductCode(ime) {
     console.log('Zaganjam brskalnik (headless)...');
-    
+
     // Možne poti do Chromium/Chrome
     const possiblePaths = [
         '/snap/bin/chromium',
@@ -18,9 +18,9 @@ async function getProductCode(ime) {
         '/usr/bin/google-chrome',
         '/usr/bin/google-chrome-stable'
     ];
-    
+
     let executablePath = null;
-    
+
     // Poiščimo delujočo pot
     for (const path of possiblePaths) {
         if (fs.existsSync(path)) {
@@ -29,18 +29,18 @@ async function getProductCode(ime) {
             break;
         }
     }
-    
+
     if (!executablePath) {
         throw new Error('Ni mogoče najti nameščenega brskalnika. Namestite Chromium z: snap install chromium');
     }
-    
+
     console.log(`Uporabljam brskalnik: ${executablePath}`);
-    
+
     const browser = await puppeteer.launch({
         executablePath: executablePath,
         headless: 'new',
         args: [
-            '--no-sandbox', 
+            '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
@@ -72,43 +72,39 @@ async function getProductCode(ime) {
     );
 
     try {
-        console.log(`Odpiram iskalno stran za "${ime}"...`);
+        console.log(`stran za "${ime}"...`);
         await page.goto(`https://www.trgovinejager.com/iskalnik/?isci=${ime}`, { waitUntil: 'networkidle2' });
 
         // Sprejmi piškotke, če so prikazani
         try {
-            console.log('Preverjam, ali je prikazano obvestilo o piškotkih...');
+            console.log('Ali so piskot?');
             await page.waitForSelector('.bcms-cookies-btn--accept', { timeout: 5000 });
-            console.log('Klikam "Sprejmi vse"...');
+            console.log('sprejem piskotov...');
             await page.click('.bcms-cookies-btn--accept');
             await page.waitForTimeout(1000);
         } catch (e) {
-            console.log('Banner za piškotke ni bil prikazan.');
+            console.log('Ni piskotov');
         }
 
-        // Čakaj na rezultate
-        console.log('Čakam na prikaz rezultatov...');
         await page.waitForSelector('.item-box', { timeout: 10000 });
 
-        // Pridobi povezavo prvega izdelka
-        console.log('Pridobivam povezavo prvega izdelka...');
+        console.log('povezava prvega izdelka...');
         const itemBox = await page.$('.item-box a');
 
         if (!itemBox) {
-            console.log('⚠️ Ni bilo mogoče najti prvega izdelka.');
+            console.log('Ni prvega izdelka');
             await browser.close();
             return null;
         }
 
         const productUrl = await page.evaluate(a => a.href, itemBox);
-        console.log('✅ Povezava prvega izdelka:', productUrl);
+        console.log('✅:', productUrl);
 
-        // Odpri stran izdelka
-        console.log(`Odpiram stran izdelka: ${productUrl}`);
+        console.log(`izdelk: ${productUrl}`);
         await page.goto(productUrl, { waitUntil: 'networkidle2' });
 
-        // Počakaj na šifro produkta
-        console.log('Čakam na prikaz šifre produkta...');
+  
+        console.log('šifra produkta...');
         await page.waitForSelector('.prod-number', { timeout: 10000 });
 
         const productCode = (await page.$eval('.prod-number', el => el.textContent.trim())).replace(/\s+/g, '').trim();
@@ -118,11 +114,11 @@ async function getProductCode(ime) {
         const imageSrc = await page.$eval('.slider-image img', img => img.src);
         const name = await page.$eval('.product-info__product-name', el => el.textContent.trim());
 
-        console.log('✅ Šifra produkta:', productCode);
+        console.log('✅', productCode);
 
         await browser.close();
 
-        // Shrani v datoteko
+        // Shrani
         const outputDir = path.join(__dirname, '/sites/public/data');
         const outputPath = path.join(outputDir, `${productCode.split(":")[1]}.json`);
 

@@ -48,6 +48,7 @@ class Shoplist : AppCompatActivity() {
 
         binding.webView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
         binding.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        binding.webView.settings.javaScriptEnabled = true
         binding.webView.loadUrl("https://z7.si/wisfi/seznam")
 
         setupLightSensor()

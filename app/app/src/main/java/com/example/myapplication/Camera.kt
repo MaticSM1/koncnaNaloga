@@ -51,7 +51,7 @@ class MyCamera(
                 cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
                 startRepeatingCapture()
             } catch (e: Exception) {
-                Log.e("CameraHelper", "Napaka pri zagonu kamere: ${e.message}", e)
+                Log.e("Camera", "Napaka pri zagonu kamere: ${e.message}", e)
             }
         }, ContextCompat.getMainExecutor(context))
     }
@@ -83,7 +83,7 @@ class MyCamera(
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Log.e("CameraHelper", "Napaka pri zajemu slike: ${exception.message}", exception)
+                    Log.e("Camera", "Napaka pri zajemu slike: ${exception.message}", exception)
                 }
             }
         )

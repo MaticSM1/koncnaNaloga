@@ -4,6 +4,8 @@ const net = require('net');
 const session = require('express-session');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jager = require('./jagerLinux');
+const jagerWin = require('./jager');
+
 const scraper = require('./scraperLinux');
 const fs = require('fs');
 const path = require('path');
@@ -16,23 +18,32 @@ const User = require('./models/user.js');
 const bcrypt = require('bcrypt');
 
 
-const runningOnServer = process.env.RUNNING_ON_SERVER || false;
+const runningOnServer = (process.env.SERVER == "TRUE");
+console.log('Running on server:', runningOnServer);
 let avtentikacija = ""
 let avtentikacijaDate = new Date();
 
+
+
 const app = express();
 const port = 3000;
-let proxy = process.env.PROXY || "";
+let proxy = process.env.PROXY || "/wisfi";
+if (proxy == "ne") proxy = "";
 
 // MongoDB povezava
-const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-});
+const uri = process.env.MONGO_URI || "VNESI URI MONGODB!!!";
+let client;
+try {
+    client = new MongoClient(uri, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        }
+    });
+} catch (err) {
+    console.error("Napaka pri podatkovni bazi:", err);
+}
 global.client = client;
 
 const mongoose = require('mongoose');
@@ -41,23 +52,23 @@ async function run() {
     try {
         await client.connect();
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB native client povezan");
+        console.log("MongoDB povezan");
 
         await mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
-        console.log("✅ Mongoose povezan");
+        console.log("MongoDB povezan");
     } catch (err) {
-        console.error("❌ Napaka pri povezovanju:", err);
+        console.error("Napkaka pri povezavi mongo:", err);
     }
 }
 run().catch(console.dir);
 
-// Middleware
+
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "Ni nastavljen",
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
@@ -71,7 +82,7 @@ app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     console.log(req.session.email);
     if (req.session.email) {
         if (req.session.login2f) {
@@ -83,19 +94,28 @@ app.get('/', (req, res) => {
 
             if (req.session.login2fPotrditev) {
                 console.log('Prijavljen1:', req.session.email);
-                res.sendFile(__dirname + '/sites/portal.html');
+                try {
+                    const products = await Product.find().sort({ _id: -1 }).limit(3);
+                    res.render('portal', { products });
+                } catch (err) {
+                    res.render('portal', {});
+                }
             } else {
                 console.log('Prijavljen2:', req.session.email);
                 res.sendFile(__dirname + '/sites/potrditev.html');
             }
-
         } else {
-            console.log('Prijavljen3:', req.session.email);
-            res.sendFile(__dirname + '/sites/portal.html');
+            try {
+                const products = await Product.find().sort({ _id: -1 }).limit(3);
+                res.render('portal', { products });
+            } catch (err) {
+                res.render('portal', {});
+            }
         }
     } else {
         console.log('Neprijavljen obiskovalec');
-        res.sendFile(__dirname + '/sites/main.html');
+        res.render('main');
+
     }
 });
 
@@ -107,9 +127,26 @@ app.get(`${proxy}/ping`, (req, res) => {
 app.get(`${proxy}/logout`, (req, res) => {
     req.session.destroy(err => {
         if (err) return res.status(500).send('Napaka pri odjavi');
-        res.redirect('/');
+        res.redirect(`/${proxy}/`);
     });
 });
+
+app.get(`${proxy}/deliteAcc`, (req, res) => {
+    if (!req.session.email) {
+        return res.status(401).send('Niste prijavljeni');
+    }
+    User.deleteOne({ username: req.session.email }, (err) => {
+        if (err) {
+            console.error('Napaka pri brisanju računa:', err);
+            return res.status(500).send('Napaka pri brisanju računa');
+        }
+        req.session.destroy(err => {
+            if (err) return res.status(500).send('Napaka pri odjavi');
+            res.redirect(`/${proxy}/`);
+        });
+    })
+});
+
 
 app.post(`${proxy}/register`, async (req, res) => {
     const { username, password } = req.body;
@@ -122,7 +159,7 @@ app.post(`${proxy}/register`, async (req, res) => {
         if (existingUser)
             return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
 
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 je "salt rounds"
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
         const newUser = new User({
             username,
@@ -183,7 +220,9 @@ app.get(`${proxy}/getItems`, async (req, res) => {
 
     try {
         try {
-            const result = await jager.getProductCode(name);
+            let result
+            if (runningOnServer) result = await jager.getProductCode(name);
+            else result = await jagerWin.getProductCode(name);
             res.json({ result });
         } catch (err) {
             console.error('Napaka pri getProductCode:', err);
@@ -197,15 +236,15 @@ app.get(`${proxy}/getItems`, async (req, res) => {
 app.get(`${proxy}/izdelek`, async (req, res) => {
     const { id } = req.query;
 
-
     try {
         const dataPath = path.join(__dirname, 'sites/public/data', `${id}.json`);
         if (!fs.existsSync(dataPath)) {
             // await jager.getProductCode(id);
             await scraper.getProduct(id, "veskajjes");
             const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-            return res.render('izdelek', { data });
+            res.render('izdelek', { data });
             await scraper.getProduct(id, "jager");
+            return
             // res.render('nalaganjeIzdelka');
 
         }
@@ -216,6 +255,130 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
         res.status(500).send('Napaka strežnika');
     }
 
+});
+
+app.get(`${proxy}/history`, async (req, res) => {
+    const { id } = req.query;
+
+    try {
+        const user = await User.findOne({ username: id }).populate('products');
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        const productNames = user.products
+        console.log(productNames);
+        res.render('zgodovina', { productNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.get(`${proxy}/seznam`, async (req, res) => {
+    const username = req.session.email
+    try {
+        console.log(username)
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        console.log("Celoten uporabnik:", user);
+        const shopNames = user.shopIteams
+        console.log(shopNames);
+        res.render('seznam', { shopNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.post(`${proxy}/seznamRemoveItem`, async (req, res) => {
+    const { itemname } = req.body;
+    const username = req.session.email;
+    console.log(itemname)
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) return res.status(404).send('User not found');
+
+        user.shopIteams = user.shopIteams.filter(item => item !== itemname);
+
+        await user.save();
+
+        res.status(200).send({ message: 'Item deleted' });
+    } catch (err) {
+        console.error('Napaka pri brisanju:', err);
+        res.status(500).send('Napaka na strežniku');
+    }
+});
+
+app.post(`${proxy}/seznamAddItem`, async (req, res) => {
+    const { itemname } = req.body;
+    const username = req.session.email;
+
+    if (!itemname || !username) {
+        return res.status(400).send('Napačni podatki');
+    }
+
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) return res.status(404).send('User not found');
+
+        if (!user.shopIteams.includes(itemname)) {
+            user.shopIteams.push(itemname);
+            await user.save();
+        }
+
+        res.status(200).send({ message: 'Item added' });
+    } catch (err) {
+        console.error('Napaka pri dodajanju:', err);
+        res.status(500).send('Napaka na strežniku');
+    }
+});
+
+
+
+app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
+    const { name } = req.query;
+    const username = req.session.email
+
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).send('Uporabnik ne obstaja'); d
+        }
+        console.log(name)
+        user.shopIteams.push(name);
+        await user.save();
+
+        res.send('Idzelek dodan na list');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+
+
+app.get(`${proxy}/zemljevid`, async (req, res) => {
+    const user2 = req.session.email
+
+    if (!user2) {
+        res.redirect(`${proxy}/`);
+    }
+
+    try {
+        console.log('Zemljevid uporabnika:', user2);
+        const user = await User.findOne({ username: user2 }).populate('products');
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        const productNames = user.products;
+        console.log(productNames);
+        res.render('zemljevid', { productNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
 });
 
 app.get(`/wisfi`, (req, res) => {
@@ -294,7 +457,10 @@ app.get(`${proxy}/d`, (req, res) => {
 app.get(`${proxy}/nastavitve`, (req, res) => {
     if (req.session.email) {
         console.log('Prijavljen:', req.session.email);
-        res.render('nastavitve', {}, (err, html) => {
+        if (!req.session.login2f) {
+            req.session.login2f = false;
+        }
+        res.render('nastavitve', { login2f: req.session.login2f }, (err, html) => {
             if (err) {
                 console.error('Napka nastavitve:', err);
                 return res.status(500).send('Napaka pri nalaganju strani');
@@ -345,289 +511,10 @@ app.post(`${proxy}/izklopi2f`, async (req, res) => {
     }
 });
 
-app.get(`${proxy}/seznam`, (req, res) => {
-    res.render('seznam');
-});
-
 
 app.listen(port, () => {
     console.log(`🌐 HTTP na portu ${port}`);
 });
 
 // ────────────────────────── MQTT ───────────────────────────────────────
-const mqttPort = 1883;
-const mqttServer = net.createServer(aedes.handle);
-let clients = [];
-let activeClients = [];
-let steviloAktivnih1 = 0; // enostaven način
-let steviloAktivnih2 = 0; // naš način
-
-
-aedes.authorizeSubscribe = function (client, sub, callback) {
-    if (sub.topic === 'imageRegister') {
-        return callback(new Error('Nimate dovoljenja za branje te teme.'));
-    } else {
-        return callback(null, sub);
-    }
-};
-
-mqttServer.listen(mqttPort, () => {
-    console.log(`🚀 MQTT na portu ${mqttPort}`);
-});
-
-aedes.on('client', (client) => {
-    console.log('📡 Nov:', client?.id);
-    steviloAktivnih1++;
-});
-
-aedes.on('clientDisconnect', (client) => {
-    console.log('📡 Dojava:', client?.id);
-    steviloAktivnih1--;
-    if (client && clients[client.id]) {
-        delete clients[client.id];
-    }
-})
-
-
-
-
-const orvInputDir = path.join(__dirname, 'orv/input');
-let trenutnaRegistracija = {
-    id: "",
-    timestamp: Date.now(),
-    slike: 0,
-    status: ""
-};
-
-aedes.on('publish', (packet, client) => {
-
-
-
-    if (!packet.topic || packet.topic.startsWith('$SYS')) return;
-
-    console.log('📨 Objavljeno:', packet.topic);
-    console.log('🧪 Buffer:', Buffer.isBuffer(packet.payload));
-    console.log('🔢 Velikost:', packet.payload.length);
-
-    const clientId = client ? client.id : 'neznano';
-    console.log('👤 Objavil clientId:', clientId);
-    if (clientId) activeClients[clientId] = new Date()
-    steviloAktivnih2 = Object.keys(activeClients).length;
-
-    const dataDir = path.join(__dirname, 'sites/public/data');
-
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-
-    if (packet.topic === 'images2') {
-        fs.writeFile(path.join(dataDir, 'test2.jpg'), packet.payload, err => {
-            if (err) console.error('❌ Napaka pri test2.jpg:', err);
-            else console.log('✅ Slika uspešno shranjena kot test2.jpg');
-        });
-    }
-
-
-    if (packet.topic === 'register') {
-        const { username, password, UUID } = JSON.parse(packet.payload.toString());
-        (async () => {
-            try {
-                const db = global.client.db('users');
-                const existingUser = await db.collection('users').findOne({ email: username });
-                if (existingUser) {
-                    aedes.publish({
-                        topic: username,
-                        payload: Buffer.from('Email že obstaja'),
-                        qos: 0,
-                        retain: false
-                    });
-                } else {
-                    console.log("registracija uspesna")
-                    await db.collection('users').insertOne({ email: username, password, login2f: false, phoneId: UUID });
-                    clients[clientId] = username;
-                    aedes.publish({
-                        topic: username,
-                        payload: Buffer.from('ok'),
-                        qos: 0,
-                        retain: false
-                    });
-                }
-            } catch (err) {
-                console.error('Napaka pri registraciji:', err);
-                aedes.publish({
-                    topic: username,
-                    payload: Buffer.from('Napaka pri registraciji'),
-                    qos: 0,
-                    retain: false
-                });
-            }
-        })();
-    }
-
-    if (packet.topic === 'login') {
-        console.log('prijava:', packet.payload.toString());
-        const { username, password, UUID } = JSON.parse(packet.payload.toString());
-        (async () => {
-            try {
-                const db = global.client.db('users');
-                const user = await db.collection('users').findOne({ email: username });
-                if (user && user.password === password) {
-                    if (UUID) {
-                        await db.collection('users').updateOne(
-                            { email: username },
-                            { $set: { phoneId: UUID } }
-                        );
-                    }
-                    clients[clientId] = username
-                    aedes.publish({
-                        topic: username,
-                        payload: Buffer.from('ok'),
-                        qos: 0,
-                        retain: false
-                    });
-                } else {
-                    aedes.publish({
-                        topic: username,
-                        payload: Buffer.from('Napačni podatki za prijavo'),
-                        qos: 0,
-                        retain: false
-                    });
-                }
-            } catch (err) {
-                console.error('Napaka pri prijavi:', err);
-                aedes.publish({
-                    topic: username,
-                    payload: Buffer.from('Napaka pri prijavi'),
-                    qos: 0,
-                    retain: false
-                });
-            }
-        })();
-    }
-
-    if (packet.topic === 'UUID') {
-        console.log('UUID:', packet.payload.toString());
-        let UUID = packet.payload.toString()
-        console.log('UUID:', UUID);
-        (async () => {
-            try {
-                const db = global.client.db('users');
-                const user = await db.collection('users').findOne({ phoneId: UUID });
-                if (user) {
-                    clients[clientId] = user.email;
-                    console.log('Najden uporabnik:', user.email);
-                    aedes.publish({
-                        topic: UUID.substring(0, 5),
-                        payload: Buffer.from('ok'),
-                        qos: 0,
-                        retain: false
-                    });
-                } else {
-                    aedes.publish({
-                        topic: UUID.substring(0, 5),
-                        payload: Buffer.from('UUID ne obstaja'),
-                        qos: 0,
-                        retain: false
-                    });
-                }
-            } catch (err) {
-                console.error('Napaka pri preverjanju UUID:', err);
-                aedes.publish({
-                    topic: UUID.substring(0, 5),
-                    payload: Buffer.from('Napaka pri preverjanju UUID'),
-                    qos: 0,
-                    retain: false
-                });
-            }
-        })();
-    }
-
-    if (packet.topic === 'imageRegister') {
-        if (trenutnaRegistracija.id == "") {
-            trenutnaRegistracija.id = clientId;
-        }
-        if (clientId == trenutnaRegistracija.id && trenutnaRegistracija.slike < 20) {
-            trenutnaRegistracija.slike++;
-            fs.writeFile(path.join(orvInputDir, `${trenutnaRegistracija.slike - 1}.jpg`), packet.payload, err => {
-                if (err) console.error('Napaka pri shranjevanju slike', err);
-            });
-            console.log(`Slika ${trenutnaRegistracija.slike}  registracijo ${trenutnaRegistracija.id}`);
-        } else {
-            console.log('Zasedeno');
-        }
-    }
-
-    if (packet.topic === 'imageLogin') {
-        const inputLoginDir = path.join(__dirname, 'orv/inputLogin');
-        if (!fs.existsSync(inputLoginDir)) fs.mkdirSync(inputLoginDir, { recursive: true });
-        fs.writeFile(path.join(inputLoginDir, `test.jpg`), packet.payload, err => {
-            if (err) console.error('Napaka slike za login', err);
-            else console.log(`Slika za login shranjena`);
-
-        });
-
-        // linux prijava
-        const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
-        const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
-        const process = exec(`${pythonCmd} "${scriptPath}"`);
-
-        process.stdout.on('data', (data) => {
-            console.log(`Python stdout: ${data}`);
-            if (data == "True\n") {
-                // odgovor
-                console.log(clients[clientId]);
-                aedes.publish({
-                    topic: clients[clientId],
-                    payload: Buffer.from('ok'),
-                    qos: 0,
-                    retain: false
-                });
-                avtentikacija = clients[clientId];
-                avtentikacijaDate = new Date();
-            } else if (data == "False\n") {
-                console.log('Napaka pri prijavi');
-                aedes.publish({
-                    topic: clients[clientId],
-                    payload: Buffer.from('Napaka pri prijavi'),
-                    qos: 0,
-                    retain: false
-                });
-            }
-
-        });
-
-        process.stderr.on('data', (data) => {
-            console.error(`Napaka: ${data}`);
-        });
-
-        process.on('close', (code) => {
-            console.log(`Proces zaključen z izhodno kodo ${code}`);
-        });
-
-        process.on('error', (err) => {
-            console.error(`Napaka pri zagonu skripte: ${err.message}`);
-        });
-
-
-    }
-
-
-    if (packet.topic === 'QR') {
-
-        try {
-            const { qr, lat, lon, light } = JSON.parse(packet.payload.toString());
-            console.log(qr, lat, lon, light);
-            const newProduct = new Product({
-                qrcode: qr,
-                latitude: lat,
-                longitude: lon,
-
-            });
-
-            newProduct.save()
-                .then(() => console.log('Product saved:', newProduct))
-                .catch(err => console.error('Error saving product:', err));
-        } catch (err) {
-            console.error('Failed to parse packet payload:', err);
-        }
-    }
-
-});
+let mqtt = require('./mqtt.js');

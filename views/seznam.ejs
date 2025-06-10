@@ -13,7 +13,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #fafafa;
+            background-color: transparent;
             color: #333;
             line-height: 1.6;
         }
@@ -186,7 +186,28 @@
             font-weight: 600;
             color: #2c3e50;
         }
-        
+     .home-button {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.5rem 1.2rem;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 6px rgba(76, 175, 80, 0.4);
+    z-index: 1000;
+}
+
+.home-button:hover {
+    background: #369139;
+    box-shadow: 0 5px 10px rgba(54, 145, 57, 0.6);
+}
+
+
         .clear-btn {
             width: 100%;
             padding: 0.75rem;
@@ -223,8 +244,24 @@
             }
         }
     </style>
+        <link rel="stylesheet" href="/wisfi/public/main.css">
 </head>
 <body>
+        <header>
+            <nav>
+                <div class="logo">
+                    <span class="logo-icon">🍎</span>
+                    <span>WISFI - Kaj je v hrani</span>
+                </div>
+                <div class="nav-links">
+                    <a href="/wisfi/">Domov</a>
+                    <a href="/wisfi/zemljevid">Zemljevid</a>
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
+                    <a href="/wisfi/public/kontakt.html">Api</a>
+                    <a href="/wisfi/nastavitve">Nastavitve</a>
+                </div>
+            </nav>
+        </header>
     <div class="container">
         <div class="header">
             <h1>Shopping List</h1>
@@ -250,88 +287,142 @@
         <button class="clear-btn hidden" id="clearBtn">Počisti opravljene</button>
     </div>
 
-    <script>
-        let items = [];
-        let nextId = 1;
+<script>
+    let shopIteams = JSON.parse(`<%- JSON.stringify(shopNames || []) %>`);
+    console.log("Raw input:", shopIteams);
+    let items = Array.isArray(shopIteams)
+        ? shopIteams.map((item, index) => {
+            if (typeof item === 'string') {
+                return {
+                    id: index + 1,
+                    text: item,
+                    completed: false
+                };
+            } else {
+                return item;
+            }
+        })
+        : [];
 
-        const itemInput = document.getElementById('itemInput');
-        const addButton = document.getElementById('addButton');
-        const shoppingList = document.getElementById('shoppingList');
-        const stats = document.getElementById('stats');
-        const totalItems = document.getElementById('totalItems');
-        const completedItems = document.getElementById('completedItems');
-        const clearBtn = document.getElementById('clearBtn');
+    console.log("First item:", items[0]);
+    console.log("Parsed items:", items);
 
-        function addItem() {
-            const text = itemInput.value.trim();
-            if (!text) return;
+    let nextId;
+    if (items.length === 0) {
+        nextId = 1;
+    } else {
+        const maxId = Math.max(...items.map(item => item.id));
+        nextId = maxId + 1;
+    }
 
-            items.push({
-                id: nextId++,
-                text: text,
-                completed: false
-            });
+    const itemInput = document.getElementById('itemInput');
+    const addButton = document.getElementById('addButton');
+    const shoppingList = document.getElementById('shoppingList');
+    const stats = document.getElementById('stats');
+    const totalItems = document.getElementById('totalItems');
+    const completedItems = document.getElementById('completedItems');
+    const clearBtn = document.getElementById('clearBtn');
 
+
+function addItem() {
+    const text = itemInput.value.trim();
+    if (text === '') return;
+
+    const newItem = {
+        id: nextId++,
+        text: text,
+        completed: false
+    };
+
+    fetch('/wisfi/seznamAddItem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemname: newItem.text })
+    })
+    .then(response => {
+        if (response.ok) {
+            items.push(newItem);
+            render();
             itemInput.value = '';
+        } else {
+            console.error('Napaka pri dodajanju na strežnik');
+        }
+    })
+    .catch(error => {
+        console.error('Napaka:', error);
+    });
+}
+
+
+function deleteItem(id) {
+    console.log("delete");
+    const item = items.find(item => item.id === id);
+    if (!item) return;
+
+    fetch('/wisfi/seznamRemoveItem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ itemname: item.text })
+    })
+    .then(response => {
+        if (response.ok) {
+            items = items.filter(i => i.id !== id);
             render();
+        } else {
+            console.error('Napaka pri brisanju na strežniku');
         }
+    })
+    .catch(error => {
+        console.error('Napaka:', error);
+    });
+}
 
-        function toggleItem(id) {
-            const item = items.find(item => item.id === id);
-            if (item) {
-                item.completed = !item.completed;
-                render();
-            }
-        }
 
-        function deleteItem(id) {
-            items = items.filter(item => item.id !== id);
-            render();
-        }
-
-        function clearCompleted() {
-            items = items.filter(item => !item.completed);
-            render();
-        }
-
-        function render() {
-            if (items.length === 0) {
-                shoppingList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <p>Še ni dodanih artiklov</p>
-                    </div>
-                `;
-                stats.classList.add('hidden');
-                clearBtn.classList.add('hidden');
-                return;
-            }
-
-            shoppingList.innerHTML = items.map(item => `
-                <div class="list-item ${item.completed ? 'completed' : ''}" onclick="toggleItem(${item.id})">
-                    <div class="checkbox"></div>
-                    <span class="item-text">${item.text}</span>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteItem(${item.id})">×</button>
-                </div>
-            `).join('');
-
-            const total = items.length;
-            const completed = items.filter(item => item.completed).length;
-
-            totalItems.textContent = total;
-            completedItems.textContent = completed;
-            
-            stats.classList.remove('hidden');
-            clearBtn.classList.toggle('hidden', completed === 0);
-        }
-
-        addButton.addEventListener('click', addItem);
-        itemInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addItem();
-        });
-        clearBtn.addEventListener('click', clearCompleted);
-
+    function clearCompleted() {
+        items = items.filter(item => !item.completed);
         render();
-    </script>
+    }
+
+    function render() {
+        if (items.length === 0) {
+            shoppingList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>Še ni dodanih artiklov</p>
+                </div>
+            `;
+            stats.classList.add('hidden');
+            clearBtn.classList.add('hidden');
+            return;
+        }
+
+        shoppingList.innerHTML = items.map(item => `
+            <div class="list-item ${item.completed ? 'completed' : ''}">
+                <span class="item-text">${item.text}</span>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteItem(${item.id})">×</button>
+            </div>
+        `).join('');
+
+        const total = items.length;
+        const completed = items.filter(item => item.completed).length;
+
+        totalItems.textContent = total;
+        completedItems.textContent = completed;
+
+        stats.classList.remove('hidden');
+        clearBtn.classList.toggle('hidden', completed === 0);
+    }
+
+    addButton.addEventListener('click', addItem);
+    itemInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addItem();
+    });
+    clearBtn.addEventListener('click', clearCompleted);
+
+    render();
+</script>
+
 </body>
 </html>

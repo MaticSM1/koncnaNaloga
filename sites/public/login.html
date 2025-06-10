@@ -56,27 +56,16 @@
 
                     <div class="register-link">
                         <p>Nimate še računa?</p>
-                        <button class="register-button" onclick="window.location.href='/wisfi/public/register.html'">Ustvarite račun</button>
+                        <button class="register-button"
+                            onclick="window.location.href='/wisfi/public/register.html'">Ustvarite račun</button>
                     </div>
                 </div>
             </section>
         </main>
 
         <footer>
-            <div class="footer-links">
-                <a href="#">O nas</a>
-                <a href="#">Pogoji uporabe</a>
-                <a href="#">Zasebnost</a>
-                <a href="#">Pomoč</a>
-            </div>
-
-            <div class="social-icons">
-                <a href="#" class="social-icon">📘</a>
-                <a href="#" class="social-icon">📷</a>
-                <a href="#" class="social-icon">🐦</a>
-            </div>
-
-            <p>&copy; 2025 Kaj je v hrani. Vse pravice pridržane.</p>
+            <p>WISFI - Narejeno za končno projektno nalogo na Fakulteta za elektrotehniko, računalništvo in informatiko.
+            </p>
         </footer>
     </div>
 
@@ -87,7 +76,7 @@
             const username = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Simulacija prijave
+
             if (username && password) {
                 fetch('/wisfi/login', {
                     method: 'POST',

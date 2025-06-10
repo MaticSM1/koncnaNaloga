@@ -110,7 +110,6 @@ class MyApplication : Application() {
                 .payload(byteArray)
                 .send()
 
-            Toast.makeText(this, "Sporočilo poslano na '$topic'", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Toast.makeText(this, "Napaka pri pošiljanju: ${e.message}", Toast.LENGTH_LONG).show()
         }
@@ -133,14 +132,12 @@ class MyApplication : Application() {
                         val message = String(publish.payloadAsBytes, StandardCharsets.UTF_8)
 
                         if (publish.topic.toString() == username) {
-                            Log.d("MQTT", "Prejeto sporočilo na temi '$username': $message")
 
                             Handler(Looper.getMainLooper()).post {
                                 onMqttMessage?.invoke(username, message)
                             }
                         }
                     } catch (e: Exception) {
-                        Log.e("MQTT", "Napaka pri sprejemu: ${e.message}")
                     }
                 }
             }.start()

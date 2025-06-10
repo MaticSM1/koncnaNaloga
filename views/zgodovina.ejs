@@ -1,0 +1,74 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Zgodovina izdelkov</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/wisfi/public/main.css">
+</head>
+
+    <div class="carousel2" id="carousel">
+
+
+    </div>
+
+    <div class="carousel-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+
+    </div>
+
+<script>
+
+    let products = JSON.parse(`<%- JSON.stringify(productNames || []) %>`)
+    let arrProducts = [];
+    if (products && products.length > 0) {
+        for (let i = 0; i < products.length; i++) {
+            arrProducts.push(products[i].qrcode);
+        }
+    }
+
+    arrProducts.forEach((product, index) => {
+        console.log('Izdelek:', product);
+
+
+        fetch(`/wisfi/public/data/${product}.json`)
+            .then(response => {
+                if (!response.ok) {
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                try {
+                    console.log('Podrobnosti izdelka:', data);
+
+                    const carouselWrapper = document.getElementById('carousel-wrapper');
+                    const carousel = document.getElementById('carousel');
+                    if (carousel) {
+
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.onclick = () => viewProduct(data.name || '');
+                        card.innerHTML = `
+                        <div class="product-image">
+                            ${data.imageSrc ? `<img src="${data.imageSrc}" alt="${data.name || ''}" style="width:90%;height:90%;object-fit:contain;">` : (data.emoji || '🛒')}
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">${data.name || data.name2 || 'Neznan izdelek'}</div>
+                            <div class="product-brand">${data.price ? data.price + ' €' : ''}</div>
+
+                        </div>
+                    `;
+                        carousel.appendChild(card);
+                    }
+                } catch (e) {
+                    console.error('Napaka pri čiščenju imena izdelka:', e);
+                }
+
+            })
+            .catch(err => {
+                console.error('Napaka pri pridobivanju podrobnosti izdelka:', err);
+            });
+
+    });
+</script>

@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
@@ -9,8 +10,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +33,7 @@ class Cam : AppCompatActivity() {
     private var longitude: Double? = null
     private var oldValue: String = ""
 
-    private var cameraHelper: MyCamera? = null
+    private var myCamera: MyCamera? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +49,10 @@ class Cam : AppCompatActivity() {
         setupLightSensor()
 
         binding.back.setOnClickListener { finish() }
+        binding.history.setOnClickListener{
+            val intent = Intent(this, History::class.java)
+            startActivity(intent)
+        }
 
         if (isCameraPermissionGranted()) startCamera()
         else ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
@@ -95,7 +98,7 @@ class Cam : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        cameraHelper = MyCamera(
+        myCamera = MyCamera(
             context = this,
             lifecycleOwner = this,
             previewView = binding.previewView,
@@ -118,9 +121,8 @@ class Cam : AppCompatActivity() {
                             put("light", lightLevel ?: "ni na voljo")
                         }
 
-                        app.sendMessage("QR", json.toString())
-
                         if (rawValue != oldValue) {
+                            app.sendMessage("QR", json.toString())
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
                             oldValue = rawValue
                         }
@@ -133,12 +135,12 @@ class Cam : AppCompatActivity() {
                 }
         }
 
-        cameraHelper?.startCamera()
+        myCamera?.startCamera()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraHelper?.stop()
+        myCamera?.stop()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

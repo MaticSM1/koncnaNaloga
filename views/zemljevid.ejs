@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="sl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zemljevid - Lokacije</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            color: black;
+        }
+
+        #map {
+            height: 500px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+        }
+    </style>
+</head>
+
+
+<!DOCTYPE html>
+<html lang="sl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WISFI</title>
+    <link rel="stylesheet" href="/wisfi/public/main.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <span class="logo-icon">🍎</span>
+                    <span>WISFI - Kaj je v hrani</span>
+                </div>
+                <div class="nav-links">
+                    <a href="/wisfi/seznam">Seznam</a>
+                    <a href="/wisfi/zemljevid">Zemljevid</a>
+                    <a href="/wisfi/public/kontakt.html">Kontakt</a>
+                    <a href="/wisfi/public/kontakt.html">Api</a>
+                    <a href="/wisfi/nastavitve">Nastavitve</a>
+                    
+                </div>
+            </nav>
+        </header>
+
+
+
+        <main>
+            <h2 style="color: black; text-align: center;">Kdaj si kje nakupoval?</h2>
+    <div id="map"></div>
+        </main>
+
+        <footer>
+            <p>WISFI - Narejeno za končno projektno nalogo na Fakulteta za elektrotehniko, računalništvo in informatiko.
+            </p>
+        </footer>
+    </div>
+
+
+</body>
+
+</html>
+
+
+
+
+<body>
+
+    <h2 style="color: white; text-align: center;">Zemljevid z označenimi lokacijami</h2>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+
+        let elements = JSON.parse(`<%- JSON.stringify(productNames || []) %>`)
+        console.log(elements);
+
+        elements = elements.filter((el, idx, arr) => {
+            if (!el.time) return true;
+            const elTime = new Date(el.time).getTime();
+            return arr.findIndex(other => {
+                if (!other.time) return false;
+                const otherTime = new Date(other.time).getTime();
+                return Math.abs(elTime - otherTime) < 360000;
+            }) === idx;
+        });
+
+
+        const map = L.map('map').setView([46.5574, 15.6413], 13);
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; Esri, DigitalGlobe, GeoEye, Earthstar Geographics, USGS, ArcGIS',
+            maxZoom: 18
+        });
+
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        });
+
+        satelliteLayer.addTo(map);
+
+        const baseLayers = {
+            "Satelitski pogled": satelliteLayer,
+            "Cestni zemljevid": streetLayer
+        };
+        L.control.layers(baseLayers).addTo(map);
+
+        elements.forEach(el => {
+            const marker = L.marker([el.latitude, el.longitude]).addTo(map);
+            marker.bindPopup(`
+                <div style="text-align: center; padding: 10px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2c3e50;">
+                        ${el.time ? new Date(el.time).toLocaleString('sl-SI', { dateStyle: 'full', timeStyle: 'short' }) : 'Ni podatka o času'}
+                    </h4>
+                </div>
+            `);
+        });
+
+        map.on('click', function (e) {
+            const lat = e.latlng.lat.toFixed(4);
+            const lng = e.latlng.lng.toFixed(4);
+
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div style="text-align: center;">
+                        <h4 style="margin: 0 0 5px 0;">Kliknjena lokacija</h4>
+                        <p style="margin: 2px 0;">Širina: ${lat}°</p>
+                        <p style="margin: 2px 0;">Dolžina: ${lng}°</p>
+                    </div>
+                `)
+                .openOn(map);
+        });
+
+        L.control.scale({
+            metric: true,
+            imperial: false,
+            position: 'bottomright'
+        }).addTo(map);
+    </script>
+</body>
+
+</html>

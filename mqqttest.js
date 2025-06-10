@@ -4,7 +4,7 @@ const mqtt = require('mqtt');
 //const brokerUrl = 'mqtt://193.95.229.123:1883'; 
 const brokerUrl = 'mqtt://localhost:1888';
 
-const topic = 'test/topic';
+const topic = 'QR';
 
 const client = mqtt.connect(brokerUrl);
 
@@ -24,7 +24,7 @@ client.on('message', (topic, message) => {
     client.end();
 });
 
-   
+
 client.on('error', (err) => {
     console.error('Napaka:', err);
     client.end();

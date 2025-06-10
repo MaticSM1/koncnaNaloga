@@ -1,0 +1,24 @@
+name: serverUpdateAndCheck
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ping-url:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Počakaj 10 sekund
+        run: sleep 10
+
+      - name: Preveri ali je server online
+        run: |
+          echo "Pingam https://z7.si/wisfi/ping"
+          if curl -s --head  --request GET https://z7.si/wisfi/ping | grep "200 OK" > /dev/null; then
+            echo "Server je online."
+          else
+            echo "Server ni dostopen!" >&2
+            exit 1
+          fi

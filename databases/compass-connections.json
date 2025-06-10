@@ -1,0 +1,64 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "0db16959-ad54-4bef-9b53-d4e10f1af18b",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1749378266910"
+        }
+      },
+      "favorite": {
+        "name": ""
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb://localhost:27017/",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjowLCJzdGF0ZSI6W119"
+        }
+      }
+    },
+    {
+      "id": "2a7e1e80-bb9c-436c-8278-af4a15c372aa",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1749505417563"
+        }
+      },
+      "favorite": {
+        "name": "cluster0.auirxjg.mongodb.net",
+        "color": "color1"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://maticsmusil:L2Cnwbxpg7esUzw6@cluster0.auirxjg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjowLCJzdGF0ZSI6W119"
+        }
+      }
+    },
+    {
+      "id": "e8202b92-b2d7-4af6-8bec-baf5273dce86",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1746528476893"
+        }
+      },
+      "favorite": {
+        "name": "vaja3",
+        "color": "color2"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb://localhost:27017/",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjowLCJzdGF0ZSI6W119"
+        }
+      }
+    }
+  ]
+}
