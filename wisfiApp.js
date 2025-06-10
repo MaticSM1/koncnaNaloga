@@ -258,6 +258,70 @@ app.get(`${proxy}/history`, async (req, res) => {
     }
 });
 
+app.get(`${proxy}/seznam`, async (req, res) => {
+    const username = req.session.email
+    try {
+        console.log(username)
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        console.log("Celoten uporabnik:", user);
+        const shopNames = user.shopIteams
+        console.log(shopNames);
+        res.render('seznam', { shopNames });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
+
+app.post('/seznamRemoveItem', async (req, res) => {
+    const { itemname } = req.body;
+    const username = req.session.email;
+    console.log(itemname)
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) return res.status(404).send('User not found');
+
+        user.shopIteams = user.shopIteams.filter(item => item !== itemname);
+
+        await user.save();
+
+        res.status(200).send({ message: 'Item deleted' });
+    } catch (err) {
+        console.error('Napaka pri brisanju:', err);
+        res.status(500).send('Napaka na strežniku');
+    }
+});
+
+app.post('/seznamAddItem', async (req, res) => {
+    const { itemname } = req.body;
+    const username = req.session.email;
+
+    if (!itemname || !username) {
+        return res.status(400).send('Napačni podatki');
+    }
+
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) return res.status(404).send('User not found');
+
+        // Prepreči podvajanje
+        if (!user.shopIteams.includes(itemname)) {
+            user.shopIteams.push(itemname);
+            await user.save();
+        }
+
+        res.status(200).send({ message: 'Item added' });
+    } catch (err) {
+        console.error('Napaka pri dodajanju:', err);
+        res.status(500).send('Napaka na strežniku');
+    }
+});
+
+
+
 app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
     const { name } = req.query;
     const username = req.session.email
@@ -267,7 +331,7 @@ app.get(`${proxy}/shoppingListAdd`, async (req, res) => {
         if (!user) {
             return res.status(404).send('User not found');d
         }
-
+        console.log(name)
         user.shopIteams.push(name);
         await user.save();
 
@@ -429,9 +493,7 @@ app.post(`${proxy}/izklopi2f`, async (req, res) => {
     }
 });
 
-app.get(`${proxy}/seznam`, (req, res) => {
-    res.render('seznam');
-});
+
 
 
 app.listen(port, () => {

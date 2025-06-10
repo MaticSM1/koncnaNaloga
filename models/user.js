@@ -22,10 +22,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         ref: 'Product'
     }],
-    shopIteams: [{
+    shopIteams: [String],
+    model: {
         type: String,
-        ref: 'shopIteam'
-    }]
+        sparse: true
+    },
 });
 
 module.exports = mongoose.model('User', UserSchema);
