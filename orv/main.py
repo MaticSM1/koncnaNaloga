@@ -27,6 +27,13 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10)
             correct += (preds == labels).sum()
             total += len(labels)
 
+
+        # for inputs, labels in test_loader:
+        #     inputs, labels = inputs.to(device), labels.to(device)
+        #     outputs = model(inputs)
+        #     preds = outputs.argmax(1)
+        #     correct += (preds == labels).sum()
+        #     total += len(labels)
         accuracy = correct / total * 100
         print(f"Epoch {epoch+1}/{num_epochs}, Accuracy: {accuracy:.2f}%")
 

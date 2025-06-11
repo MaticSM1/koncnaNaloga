@@ -1,9 +1,9 @@
 version: "3"
 services:
-  # orv:
-  #   build: ./orv
-  #   ports:
-  #     - "3000:80"
+  orv:
+    build: ./orv
+    ports:
+      - "3000:80"
 
   app:
     build: .

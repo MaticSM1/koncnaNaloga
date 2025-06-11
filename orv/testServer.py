@@ -7,13 +7,15 @@ import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if len(sys.argv) < 2:
-    print("Uporaba: python script.py <model_suffix> <image_path>")
+    print("Uporaba: python script.py <model_suffix>")
     sys.exit(1)
 
 model_suffix = sys.argv[1]
 model_path = f"orv/model/model_{model_suffix}.pt"
-
 image_path = "orv/inputLogin/test.jpg"
+
+
+
 
 input_size = 224
 transform = transforms.Compose([
@@ -38,4 +40,8 @@ def predict_image(path):
         return predicted.item() == 1
 
 result = predict_image(image_path)
-print(result)
+if not os.path.exists(image_path):
+    print(False)
+    sys.exit(0)
+else:
+    print(result)
