@@ -349,10 +349,18 @@ aedes.on('publish', (packet, client) => {
     }
 });
 
+function getAvtentikacija() {
+  return avtentikacija;
+}
+
+function getAvtentikacijaDate() {
+  return avtentikacijaDate;
+}
+
 
 module.exports = {
     clients,
     activeClients,
-    avtentikacija,
-    avtentikacijaDate
+    getAvtentikacija,
+    getAvtentikacijaDate,
 };
