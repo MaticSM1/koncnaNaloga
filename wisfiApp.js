@@ -24,6 +24,9 @@ let avtentikacija = ""
 let avtentikacijaDate = new Date();
 
 
+// ────────────────────────── MQTT ───────────────────────────────────────
+let mqtt = require('./mqtt.js');
+
 
 const app = express();
 const port = 3000;
@@ -87,6 +90,8 @@ app.get('/', async (req, res) => {
     if (req.session.email) {
         if (req.session.login2f) {
             if (!req.session.login2fPotrditev) {
+            
+                console.log('2FA:', mqtt.avtentikacija, mqtt.avtentikacijaDate);
                 if (mqtt.avtentikacija == req.session.email && (new Date() - mqtt.avtentikacijaDate) < 60000) {
                     req.session.login2fPotrditev = true;
                 }
@@ -516,5 +521,3 @@ app.listen(port, () => {
     console.log(`🌐 HTTP na portu ${port}`);
 });
 
-// ────────────────────────── MQTT ───────────────────────────────────────
-let mqtt = require('./mqtt.js');

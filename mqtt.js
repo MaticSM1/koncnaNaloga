@@ -10,7 +10,7 @@ const mqttPort = 1883;
 let clients = [];
 let activeClients = [];
 let trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
-let avtentikacija = "";
+let avtentikacija = "ni";
 let avtentikacijaDate = new Date();
 const bcrypt = require('bcrypt');
 
