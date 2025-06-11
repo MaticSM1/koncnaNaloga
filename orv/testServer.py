@@ -8,7 +8,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if len(sys.argv) > 1:
     for arg in sys.argv[1:]:
-        print(arg)
+        #print(arg)
+        pass
 
 input_size = 224
 
