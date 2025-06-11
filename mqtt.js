@@ -246,7 +246,7 @@ aedes.on('publish', (packet, client) => {
 
         const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
         const scriptPath = path.join(__dirname, 'orv', 'testServer.py');
-        const process = exec(`${pythonCmd} "${scriptPath}"`);
+        const process = exec(`${pythonCmd} "${scriptPath}" ${clients[clientId]}`);
 
         process.stdout.on('data', (data) => {
             console.log(`Python stdout: ${data}`);

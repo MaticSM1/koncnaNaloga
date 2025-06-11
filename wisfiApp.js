@@ -159,7 +159,7 @@ app.post(`${proxy}/register`, async (req, res) => {
         if (existingUser)
             return res.status(409).json({ message: 'Uporabniško ime že obstaja' });
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
             username,
@@ -386,7 +386,7 @@ app.get(`/wisfi`, (req, res) => {
 });
 
 app.get(`${proxy}/run`, (req, res) => {
-    const process = exec('python3 orv/testServer.py');
+    const process = exec(`python3 orv/testServer.py ${username}`);
 
     res.writeHead(200, {
         'Content-Type': 'text/plain; charset=utf-8',
