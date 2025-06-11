@@ -87,7 +87,7 @@ app.get('/', async (req, res) => {
     if (req.session.email) {
         if (req.session.login2f) {
             if (!req.session.login2fPotrditev) {
-                if (avtentikacija == req.session.email && (new Date() - avtentikacijaDate) < 60000) {
+                if (mqtt.avtentikacija == req.session.email && (new Date() - mqtt.avtentikacijaDate) < 60000) {
                     req.session.login2fPotrditev = true;
                 }
             }

@@ -260,6 +260,7 @@ aedes.on('publish', (packet, client) => {
                 });
                 avtentikacija = clients[clientId];
                 avtentikacijaDate = new Date();
+                console.log('Avtentikacija:', avtentikacija);
                 console.log('Prijava uspešna:', avtentikacija);
             } else if (data == "False\n") {
                 console.log('Napaka pri prijavi');
