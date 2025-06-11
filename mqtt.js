@@ -215,6 +215,12 @@ aedes.on('publish', (packet, client) => {
     }
 
     if (packet.topic === 'imageRegister') {
+
+        if(trenutnaRegistracija.timestamp + 600000 < Date.now()) {
+            trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
+            console.log("Nova registracija");
+        }
+
         if (trenutnaRegistracija.id == "") {
             trenutnaRegistracija.id = clientId;
         }
@@ -232,6 +238,37 @@ aedes.on('publish', (packet, client) => {
                 retain: false
             });
             console.log('Zasedeno');
+
+            // const pythonCmd = fs.existsSync('/usr/bin/python3') ? 'python3' : 'python';
+            // const scriptPath = path.join(__dirname, 'orv', 'main.py');
+            // const process = exec(`${pythonCmd} "${scriptPath}" ${clients[clientId]}`);
+
+            // process.stdout.on('data', (data) => {
+            //     console.log(`Python stdout: ${data}`);
+            //     if (data == "True\n") {
+            //         console.log(clients[clientId]);
+            //         aedes.publish({
+            //             topic: clients[clientId],
+            //             payload: Buffer.from('ok'),
+            //             qos: 0,
+            //             retain: false
+            //         });
+            //         avtentikacija = clients[clientId];
+            //         avtentikacijaDate = new Date();
+            //         console.log('Avtentikacija:', avtentikacija);
+            //         console.log('Prijava uspešna:', avtentikacija);
+            //     } else if (data == "False\n") {
+            //         console.log('Napaka pri prijavi');
+            //         aedes.publish({
+            //             topic: clients[clientId],
+            //             payload: Buffer.from('Napaka pri prijavi'),
+            //             qos: 0,
+            //             retain: false
+            //         });
+            //     }
+
+            // });
+
         }
     }
 
@@ -350,11 +387,11 @@ aedes.on('publish', (packet, client) => {
 });
 
 function getAvtentikacija() {
-  return avtentikacija;
+    return avtentikacija;
 }
 
 function getAvtentikacijaDate() {
-  return avtentikacijaDate;
+    return avtentikacijaDate;
 }
 
 
