@@ -11,7 +11,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,6 +26,7 @@ class MyCamera(
     private val onImageCaptured: (Bitmap) -> Unit
 ) {
     private lateinit var imageCapture: ImageCapture
+    private lateinit var camera: Camera
     private val handler = Handler(Looper.getMainLooper())
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -39,7 +39,10 @@ class MyCamera(
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
 
-            imageCapture = ImageCapture.Builder().build()
+            imageCapture = ImageCapture.Builder()
+                .setFlashMode(ImageCapture.FLASH_MODE_OFF)
+                .build()
+
             val cameraSelector = if (isFrontCamera) {
                 CameraSelector.DEFAULT_FRONT_CAMERA
             } else {
@@ -48,7 +51,12 @@ class MyCamera(
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview, imageCapture)
+                camera = cameraProvider.bindToLifecycle(
+                    lifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture
+                )
                 startRepeatingCapture()
             } catch (e: Exception) {
                 Log.e("Camera", "Napaka pri zagonu kamere: ${e.message}", e)
@@ -87,6 +95,10 @@ class MyCamera(
                 }
             }
         )
+    }
+
+    fun flashOn(enable: Boolean) {
+            camera.cameraControl.enableTorch(enable)
     }
 
     fun stop() {

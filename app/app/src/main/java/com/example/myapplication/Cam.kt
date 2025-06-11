@@ -32,6 +32,7 @@ class Cam : AppCompatActivity() {
     private var latitude: Double? = null
     private var longitude: Double? = null
     private var oldValue: String = ""
+    private var flashEnabled: Boolean = false
 
     private var myCamera: MyCamera? = null
 
@@ -125,6 +126,16 @@ class Cam : AppCompatActivity() {
                             app.sendMessage("QR", json.toString())
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
                             oldValue = rawValue
+                            val treshold = 10000000
+                            if (lightLevel != null && lightLevel!! < treshold && !flashEnabled) {
+                                myCamera?.flashOn(true)
+                                flashEnabled = true
+                            }
+                            else if (lightLevel != null && lightLevel!! >= treshold && flashEnabled) {
+                                myCamera?.flashOn(false)
+                                flashEnabled = false
+                            }
+
                         }
 
                         break
