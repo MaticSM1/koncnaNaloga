@@ -3,9 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 from dataset import get_data_loaders
+import sys
+import os
 
 def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10):
-    train_loader, testloader = dataloaders
+    train_loader, test_loader = dataloaders
 
     for epoch in range(num_epochs):
         model.train()
@@ -31,8 +33,11 @@ def train_model(model, dataloaders, criterion, optimizer, device, num_epochs=10)
     print("Training complete")
 
 
-
 if __name__ == "__main__":
+    model_suffix = sys.argv[1]
+    model_path = f"model/model_{model_suffix}.pt"
+
+    # Parametri
     data_dir = "data"
     batch_size = 32
     input_size = 224
@@ -43,7 +48,7 @@ if __name__ == "__main__":
 
     train_loader, test_loader, classes = get_data_loaders(data_dir, batch_size, input_size)
 
-    model = models.resnet18()
+    model = models.resnet18(weights=None)
     model.fc = nn.Linear(model.fc.in_features, 2)
     model = model.to(device)
 
@@ -52,5 +57,6 @@ if __name__ == "__main__":
 
     train_model(model, (train_loader, test_loader), criterion, optimizer, device, num_epochs)
 
-    torch.save(model.state_dict(), "model/model_basic.pt")
-    print("Model saved to model/model_basic.pt")
+    os.makedirs("model", exist_ok=True)
+    torch.save(model.state_dict(), model_path)
+    print(f"Model saved to {model_path}")

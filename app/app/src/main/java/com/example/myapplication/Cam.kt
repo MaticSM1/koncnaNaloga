@@ -126,7 +126,7 @@ class Cam : AppCompatActivity() {
                             app.sendMessage("QR", json.toString())
                             binding.webView.loadUrl("https://z7.si/wisfi/izdelek?id=$rawValue")
                             oldValue = rawValue
-                            val treshold = 10000000
+                            val treshold = 100
                             if (lightLevel != null && lightLevel!! < treshold && !flashEnabled) {
                                 myCamera?.flashOn(true)
                                 flashEnabled = true
