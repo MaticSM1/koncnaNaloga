@@ -38,11 +38,7 @@ const uri = process.env.MONGO_URI || "VNESI URI MONGODB!!!";
 let client;
 try {
     client = new MongoClient(uri, {
-        serverApi: {
-            version: ServerApiVersion.v1,
-            strict: true,
-            deprecationErrors: true,
-        }
+        family: 4,
     });
 } catch (err) {
     console.error("Napaka pri podatkovni bazi:", err);
@@ -60,6 +56,7 @@ async function run() {
         await mongoose.connect(uri, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            family: 4,
         });
         console.log("MongoDB povezan");
     } catch (err) {
@@ -226,8 +223,15 @@ app.get(`${proxy}/getItems`, async (req, res) => {
     try {
         try {
             let result
-            if (runningOnServer) result = await jager.getProductCode(name);
-            else result = await jagerWin.getProductCode(name);
+            if (runningOnServer) {
+
+                result = await jager.getProductCode(name);
+                if (result) await scraper.getProduct(result, "veskajjes");
+            }
+            else {
+                result = await jagerWin.getProductCode(name);
+                if (result) await scraper.getProduct(result, "veskajjes");
+            }
             res.json({ result });
         } catch (err) {
             console.error('Napaka pri getProductCode:', err);
@@ -318,11 +322,27 @@ app.post(`${proxy}/seznamRemoveItem`, async (req, res) => {
 });
 
 app.post(`${proxy}/seznamAddItem`, async (req, res) => {
-    const { itemname } = req.body;
+    let { itemname } = req.body;
     const username = req.session.email;
 
     if (!itemname || !username) {
         return res.status(400).send('Napačni podatki');
+    }
+
+    // Check if itemname is a barcode
+    if (/^\d+$/.test(itemname)) {
+        try {
+            const filePath = path.join(__dirname, 'sites', 'public', 'data', `${itemname}.json`);
+            if (fs.existsSync(filePath)) {
+                const fileContent = fs.readFileSync(filePath, 'utf8');
+                const productData = JSON.parse(fileContent);
+                if (productData && productData.name) {
+                    itemname = productData.name;
+                }
+            }
+        } catch (err) {
+            console.error('Error resolving barcode:', err);
+        }
     }
 
     try {
@@ -334,7 +354,7 @@ app.post(`${proxy}/seznamAddItem`, async (req, res) => {
             await user.save();
         }
 
-        res.status(200).send({ message: 'Item added' });
+        res.status(200).send({ message: 'Item added', itemname: itemname });
     } catch (err) {
         console.error('Napaka pri dodajanju:', err);
         res.status(500).send('Napaka na strežniku');

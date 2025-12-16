@@ -325,29 +325,54 @@
     const clearBtn = document.getElementById('clearBtn');
 
 
-function addItem() {
+async function addItem() {
     const text = itemInput.value.trim();
     if (text === '') return;
 
+    let itemText = text;
+
+    // Try to resolve name on client side first
+    if (/^\d+$/.test(text)) {
+        try {
+            // Use relative path to be safe
+            const response = await fetch(`public/data/${text}.json`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.name) {
+                    itemText = data.name;
+                }
+            }
+        } catch (e) {
+            console.log("Could not fetch product data on client", e);
+        }
+    }
+
     const newItem = {
         id: nextId++,
-        text: text,
+        text: itemText,
         completed: false
     };
 
     fetch('/wisfi/seznamAddItem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemname: newItem.text })
+        body: JSON.stringify({ itemname: text }) // Send original text (barcode) to server
     })
     .then(response => {
         if (response.ok) {
-            items.push(newItem);
-            render();
-            itemInput.value = '';
+            return response.json();
         } else {
-            console.error('Napaka pri dodajanju na strežnik');
+            throw new Error('Napaka pri dodajanju na strežnik');
         }
+    })
+    .then(data => {
+        // If server resolved the name, use it
+        if (data.itemname) {
+            newItem.text = data.itemname;
+        }
+        items.push(newItem);
+        render();
+        itemInput.value = '';
     })
     .catch(error => {
         console.error('Napaka:', error);
