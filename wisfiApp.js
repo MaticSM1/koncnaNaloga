@@ -386,7 +386,7 @@ app.get(`${proxy}/zemljevid`, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
+//29
 app.get(`/wisfi`, (req, res) => {
     res.redirect('/');
 });
