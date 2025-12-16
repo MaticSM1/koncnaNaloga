@@ -238,6 +238,8 @@ app.get(`${proxy}/getItems`, async (req, res) => {
     }
 });
 
+
+//product
 app.get(`${proxy}/izdelek`, async (req, res) => {
     const { id } = req.query;
 
@@ -259,7 +261,6 @@ app.get(`${proxy}/izdelek`, async (req, res) => {
         console.log('Napaka pri branju izdelka:', err);
         res.status(500).send('Napaka strežnika');
     }
-
 });
 
 app.get(`${proxy}/history`, async (req, res) => {
