@@ -83,6 +83,8 @@ app.use(`${proxy}/orvinput2`, express.static(__dirname + '/orv/inputLogin'));
 
 // Routes
 app.get('/', async (req, res) => {
+    console.log("da draga");
+
     console.log(req.session.email);
     if (req.session.email) {
         if (req.session.login2f) {
