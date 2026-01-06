@@ -1,26 +1,37 @@
 # WISFI  🍽️
 
-## Summary 🍔🌍
-What is in food is a application designed for users who want to quickly and easily find out what’s in their food. The app allows users to scan or search for food items and meals, then displays detailed information about ingredients, nutritional values, allergens, and the quantity of each component. This enables users to make more informed dietary decisions based on their health goals, allergies, or diets.
+## Povzetek 🍔🌍
+What is in food je aplikacija, zasnovana za uporabnike, ki želijo hitro in enostavno izvedeti, kaj je v njihovi hrani. Aplikacija omogoča skeniranje ali iskanje živil in obrokov ter prikazuje podrobne informacije o sestavinah, hranilnih vrednostih, alergenih in količini posameznih komponent. Tako lahko uporabniki sprejemajo bolj informirane prehranske odločitve glede na svoje zdravstvene cilje, alergije ali diete.
 
-## Privacy 🔐
+## Zasebnost 🔐
 
-The application does not request any unnecessary permissions, ensuring user privacy and security.
+Aplikacija ne zahteva nepotrebnih dovoljenj, s čimer zagotavlja zasebnost in varnost uporabnikov.
 
-## Screenshots
+## Posnetki zaslona
 
-Screenshots of the application will be added soon to showcase its design and functionality.
+Posnetki zaslona aplikacije bodo kmalu dodani, da bodo prikazali njeno zasnovo in funkcionalnost.
 
-## Authors ✍️
+## Avtorji ✍️
 
 - **David Pilih**
 - **Matic ŠiŠko Musil**
 
-## Contact ☎️
+## Kontakt ☎️
 
 - **Email:** [davidpilih4242@gmail.com](mailto:davidpilih4242@gmail.com)
 - **Email:** [matic.sisko.musil@gmail.com](mailto:matic.sisko.musil@gmail.com)
 
-## License 📄
+## Licenca 📄
 
-This project is not licensed.
+Ta projekt ni licenciran.
+
+## Navodila za uporabo 
+
+1. **Namestitev aplikacije**  
+    Prenesite in namestite aplikacijo https://z7.si/wisfi/d.
+
+2. **Zagon aplikacije**  
+    Ustvari račun
+
+## Navodila namestitev serverja
+Dodaj .env v projekt v katerem je 

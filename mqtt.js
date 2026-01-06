@@ -72,6 +72,13 @@ aedes.on('publish', (packet, client) => {
     const clientId = client ? client.id : 'neznano';
     console.log('👤 clientId:', clientId);
     if (clientId) activeClients[clientId] = new Date()
+    const desetMinut = 10 * 60 * 1000;
+    for (const [id, lastActive] of Object.entries(activeClients)) {
+        if (Date.now() - lastActive > desetMinut) {
+            delete activeClients[id];
+            console.log(`Client ${id} odstranjen več kot 10 minut`);
+        }
+    }
     steviloAktivnih2 = Object.keys(activeClients).length;
 
     const dataDir = path.join(__dirname, 'sites/public/data');
@@ -216,7 +223,7 @@ aedes.on('publish', (packet, client) => {
 
     if (packet.topic === 'imageRegister') {
 
-        if(trenutnaRegistracija.timestamp + 600000 < Date.now()) {
+        if (trenutnaRegistracija.timestamp + 600000 < Date.now()) {
             trenutnaRegistracija = { id: "", timestamp: Date.now(), slike: 0, status: "" };
             console.log("Nova registracija");
         }

@@ -1,6 +1,9 @@
-const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+
+const isWin = os.platform() === 'win32';
+const puppeteer = isWin ? require('puppeteer') : require('puppeteer-core');
 
 // dir
 if (typeof __dirname === 'undefined') {
@@ -10,32 +13,40 @@ if (typeof __dirname === 'undefined') {
 async function getProduct(ime, nacin) {
     console.log('Zaganjam brskalnik (headless)...');
 
-    const possiblePaths = [
-        '/snap/bin/chromium',
-        '/usr/bin/chromium-browser',
-        '/usr/bin/chromium',
-        '/usr/bin/google-chrome',
-        '/usr/bin/google-chrome-stable'
-    ];
-
     let executablePath = null;
-    for (const p of possiblePaths) {
-        if (fs.existsSync(p)) {
-            console.log(`Najden brskalnik na: ${p}`);
-            executablePath = p;
-            break;
+
+    if (!isWin) {
+        const possiblePaths = [
+            '/snap/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable'
+        ];
+
+        for (const p of possiblePaths) {
+            if (fs.existsSync(p)) {
+                console.log(`Najden brskalnik na: ${p}`);
+                executablePath = p;
+                break;
+            }
+        }
+
+        if (!executablePath) {
+            throw new Error('Ni mogoče najti nameščenega brskalnika. Namestite Chromium z: snap install chromium');
         }
     }
 
-    if (!executablePath) {
-        throw new Error('Ni mogoče najti nameščenega brskalnika. Namestite Chromium z: snap install chromium');
-    }
-
-    const browser = await puppeteer.launch({
-        executablePath,
+    const launchOptions = {
         headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--single-process']
-    });
+    };
+
+    if (executablePath) {
+        launchOptions.executablePath = executablePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
     await page.setUserAgent(

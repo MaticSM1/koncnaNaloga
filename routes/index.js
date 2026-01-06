@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
+    console.log("daviddaaa")
     if (req.session.email) {
         if (req.session.login2f && !req.session.login2fPotrditev) {
             return res.sendFile(__dirname + '/../sites/potrditev.html');
