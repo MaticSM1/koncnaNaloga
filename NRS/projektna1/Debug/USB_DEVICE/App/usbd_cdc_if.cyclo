@@ -1,0 +1,13 @@
+../USB_DEVICE/App/usbd_cdc_if.c:150:15:CDC_Init_FS	1
+../USB_DEVICE/App/usbd_cdc_if.c:164:15:CDC_DeInit_FS	1
+../USB_DEVICE/App/usbd_cdc_if.c:178:15:CDC_Control_FS	1
+../USB_DEVICE/App/usbd_cdc_if.c:261:6:led_on	1
+../USB_DEVICE/App/usbd_cdc_if.c:265:6:led_off	1
+../USB_DEVICE/App/usbd_cdc_if.c:270:6:led_xx_on	3
+../USB_DEVICE/App/usbd_cdc_if.c:275:6:led_xx_off	3
+../USB_DEVICE/App/usbd_cdc_if.c:282:6:led_xx_toggle	3
+../USB_DEVICE/App/usbd_cdc_if.c:289:6:animation_on	1
+../USB_DEVICE/App/usbd_cdc_if.c:293:6:animation_off	1
+../USB_DEVICE/App/usbd_cdc_if.c:296:6:send_help	1
+../USB_DEVICE/App/usbd_cdc_if.c:324:15:CDC_Receive_FS	28
+../USB_DEVICE/App/usbd_cdc_if.c:420:9:CDC_Transmit_FS	2
