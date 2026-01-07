@@ -1,23 +1,27 @@
-const mqtt = require('mqtt');
-//const brokerUrl = 'mqtt://z7.si:1883';
-const brokerUrl = 'mqtt://localhost:1888';
+const net = require('net');
+
+const HOST = '192.168.1.91'; 
+const PORT = 3000;            
 
 
-const client = mqtt.connect(brokerUrl);
-
-client.on('connect', () => {
-    console.log('Povezan na MQTT strežnik');
-    client.subscribe('prijava', (err) => {
-        if (!err) {
-            console.log('Naročen na temo "prijava"');
-        }
+const server = net.createServer((conn) => {
+    console.log(`Povezan s ${conn.remoteAddress}:${conn.remotePort}`);
+    
+    conn.on('data', (data) => {
+        console.log(`Prejeto: ${data.toString('utf-8')}`);
+   
+        conn.write('Received\n');
     });
-
-    setTimeout(() => {
-        client.publish('prijava', JSON.stringify({ ime: 'matic', geslo: 'test1' }));
-    }, 1000); 
+    
+    conn.on('end', () => {
+        console.log('Klient se je odklopil');
+    });
+    
+    conn.on('error', (err) => {
+        console.error('Napaka:', err);
+    });
 });
 
-client.on('message', (topic, message) => {
-    console.log(`sporočilo na temi ${topic}: ${message.toString()}`);
+server.listen(PORT, HOST, () => {
+    console.log(`Server posluša na ${HOST}:${PORT}`);
 });
