@@ -110,7 +110,67 @@ void process_at_command(const char *at_instruction)
     strncpy((char*)msg, at_instruction, sizeof(msg) - 1);
 }
 //mmm
+void modem_init(void)
+{
+    HAL_Delay(2000);
+    process_at_command("AT\r\n");
+    HAL_Delay(500);
 
+    process_at_command("AT+CWMODE=1\r\n");
+    HAL_Delay(500);
+}
+
+void connect_wifi(void)
+{
+    char buf[128];
+
+    snprintf(buf, sizeof(buf),
+             "AT+CWJAP="%s","%s"\r\n",
+             "metka_spodaj", "TURNERJEVA");
+
+    HAL_UART_Transmit(&huart2,
+                      (uint8_t)buf,
+                      strlen(buf),
+                      HAL_MAX_DELAY);
+
+    HAL_Delay(5000); 
+}
+
+void open_tcp(void)
+{
+    char buf[96];
+
+    snprintf(buf, sizeof(buf),
+             "AT+CIPSTART="TCP","192.168.1.91",3000\r\n");
+
+    HAL_UART_Transmit(&huart2,
+                      (uint8_t)buf,
+                      strlen(buf),
+                      HAL_MAX_DELAY);
+
+    HAL_Delay(2000);
+}
+
+
+void send_to_server(char data)
+{
+    char cmd[64];
+
+    snprintf(cmd, sizeof(cmd),
+             "AT+CIPSEND=%d\r\n",
+             (int)strlen(data));
+
+    HAL_UART_Transmit(&huart2,
+                      (uint8_t)cmd,
+                      strlen(cmd),
+                      HAL_MAX_DELAY);
+
+    HAL_Delay(200);   // čaka na '>'
+    HAL_UART_Transmit(&huart2,
+                      (uint8_t*)data,
+                      strlen(data),
+                      HAL_MAX_DELAY);
+}
 
 
 int main(void)
