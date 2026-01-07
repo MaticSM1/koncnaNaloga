@@ -29,7 +29,7 @@ let mqtt = require('./mqtt.js');
 
 
 const app = express();
-const port = 3000;
+const port = 3001;
 let proxy = process.env.PROXY || "/wisfi";
 if (proxy == "ne") proxy = "";
 
@@ -537,6 +537,70 @@ app.post(`${proxy}/izklopi2f`, async (req, res) => {
         console.error('Napaka pri izklopu 2FA:', err);
         res.status(500).json({ message: 'Napaka strežnika', error: err.message });
     }
+});
+
+
+// STM
+let connectedDevice = null;
+const TCP_PORT = 3000;
+
+const tcpServer = net.createServer((socket) => {
+    console.log(` Naprava povezana: ${socket.remoteAddress}:${socket.remotePort}`);
+    
+    connectedDevice = {
+        connected: true,
+        address: socket.remoteAddress,
+        lastSeen: new Date(),
+        temp: "-",
+        voltage: "-"
+    };
+
+    socket.on('data', (data) => {
+        const dataStr = data.toString().trim();
+        console.log(`TCP data: ${dataStr}`);
+        
+        if (connectedDevice) {
+            connectedDevice.lastSeen = new Date();
+            
+            try {
+                const json = JSON.parse(dataStr);
+                if (json.temp !== undefined) connectedDevice.temp = json.temp;
+                if (json.voltage !== undefined) connectedDevice.voltage = json.voltage;
+            } catch (e) {
+                const tempMatch = dataStr.match(/temp[a-z]*\s*[:=]\s*([\d\.]+)/i);
+                if (tempMatch) connectedDevice.temp = parseFloat(tempMatch[1]);
+                
+                const voltMatch = dataStr.match(/volt[a-z]*\s*[:=]\s*([\d\.]+)/i);
+                if (voltMatch) connectedDevice.voltage = parseFloat(voltMatch[1]);
+            }
+        }
+        
+        socket.write("ACK\n");
+    });
+
+    socket.on('end', () => {
+        console.log(' Naprava odklopljena');
+        connectedDevice = null;
+    });
+
+    socket.on('error', (err) => {
+        console.error('TCP error:', err.message);
+        connectedDevice = null;
+    });
+});
+
+tcpServer.listen(TCP_PORT, () => {
+    console.log(`📡 TCP Server posluša na portu ${TCP_PORT}`);
+});
+
+
+app.get(`${proxy}/naprave`, (req, res) => {
+    res.render('naprave', { proxy: proxy, products: [] });
+});
+
+
+app.get(`${proxy}/api/device-status`, (req, res) => {
+    res.json(connectedDevice || { connected: false });
 });
 
 
