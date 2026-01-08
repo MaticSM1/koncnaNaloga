@@ -598,6 +598,10 @@ app.get(`${proxy}/naprave`, (req, res) => {
     res.render('naprave', { proxy: proxy, products: [] });
 });
 
+app.get(`${proxy}/hladilnik`, (req, res) => {
+    res.render('hladilnik', { proxy: proxy });
+});
+
 
 app.get(`${proxy}/api/device-status`, (req, res) => {
     res.json(connectedDevice || { connected: false });

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pametni Hladilnik</title>
+    <link rel="stylesheet" href="<%= proxy %>/public/main.css">
+    <style>
+        .fridge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .fridge-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+        }
+
+        .fridge-image {
+            width: 250px;
+            height: auto;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+        }
+
+        .temp-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .temp-label {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .status-online {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-offline {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .css-fridge {
+            width: 200px;
+            height: 340px;
+            background: #f0f0f0;
+            border: 4px solid #bdc3c7;
+            border-radius: 15px;
+            position: relative;
+            margin: 0 auto 30px auto;
+            box-shadow: inset 10px 0 20px rgba(0,0,0,0.05);
+        }
+        
+        .css-fridge::before { 
+            content: '';
+            position: absolute;
+            top: 2%;
+            left: 2%;
+            width: 96%;
+            height: 30%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .css-fridge::after {
+            content: '';
+            position: absolute;
+            bottom: 2%;
+            left: 2%;
+            width: 96%;
+            height: 64%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .handle-top {
+            position: absolute;
+            top: 10%;
+            left: 85%;
+            width: 6px;
+            height: 40px;
+            background: #bdc3c7;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .handle-bottom {
+            position: absolute;
+            top: 40%;
+            left: 85%;
+            width: 6px;
+            height: 100px;
+            background: #bdc3c7;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .door-alert {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            display: none; 
+        }
+        .door-open {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeeba;
+            display: block;
+        }
+        .door-closed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+        
+ 
+        .css-fridge.is-open {
+            box-shadow: 0 0 50px rgba(255, 235, 59, 0.6);
+            background: #fff9c4;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <span class="logo-icon">🍎</span>
+                    <span>WISFI - Pametni Hladilnik</span>
+                </div>
+                <div class="nav-links">
+                   <a href="<%= proxy %>/">Domov</a>
+                    <a href="<%= proxy %>/seznam">Seznam</a>
+                    <a href="<%= proxy %>/naprave">Naprave</a>
+                </div>
+            </nav>
+        </header>
+    
+    <div class="main-content">
+        <div class="fridge-container">
+            <div class="fridge-card">
+                <!-- CSS Hladilnik -->
+                <div class="css-fridge" id="fridge-icon">
+                    <div class="handle-top"></div>
+                    <div class="handle-bottom"></div>
+                </div>
+
+                <div id="door-status" class="door-alert">...</div>
+
+                <div class="temp-label">Temperatura Notranjosti</div>
+                <div id="temp-display" class="temp-display">-- °C</div>
+                
+                <div id="status-badge" class="status-badge status-offline">
+                    Povezovanje...
+                </div>
+                
+                <p id="last-update" style="color: #ccc; margin-top: 10px; font-size: 0.8rem;">
+                    Zadnja posodobitev: -
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROXY = "<%= proxy %>";
+        const tempDisplay = document.getElementById('temp-display');
+        const statusBadge = document.getElementById('status-badge');
+        const lastUpdate = document.getElementById('last-update');
+        const doorStatus = document.getElementById('door-status');
+        const fridgeIcon = document.getElementById('fridge-icon');
+        
+        function updateFridge() {
+            fetch(`${PROXY}/api/device-status`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.connected) {
+                        const temp = data.temp !== undefined ? Math.round(data.temp * 10) / 10 : '--';
+                        const voltage = data.voltage !== undefined ? data.voltage : 0;
+                        
+            
+                        tempDisplay.innerText = `${temp} °C`;
+                        tempDisplay.style.color = temp > 8 ? '#e74c3c' : '#2c3e50'; 
+                        
+               
+                        if (voltage < 2.7) {
+                            doorStatus.innerText = "VRATA: ZAPRTA";
+                            doorStatus.className = "door-alert door-closed";
+                            fridgeIcon.classList.remove('is-open');
+                        } else {
+                            doorStatus.innerText = "⚠ VRATA: ODPRTA!!!";
+                            doorStatus.className = "door-alert door-open";
+                            fridgeIcon.classList.add('is-open');
+                        }
+
+                        statusBadge.className = 'status-badge status-online';
+                        statusBadge.innerText = '● Povezano';
+                        
+                        lastUpdate.innerText = `Zadnja posodobitev: ${new Date(data.lastSeen).toLocaleTimeString()}`;
+                    } else {
+                        tempDisplay.innerText = '-- °C';
+                        tempDisplay.style.color = '#ccc';
+                        
+                        doorStatus.style.display = 'none'; 
+                        fridgeIcon.classList.remove('is-open');
+
+                        statusBadge.className = 'status-badge status-offline';
+                        statusBadge.innerText = '○ Brez povezave';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusBadge.className = 'status-badge status-offline';
+                    statusBadge.innerText = '⚠ Napaka';
+                });
+        }
+
+
+        setInterval(updateFridge, 2000);
+        updateFridge();
+    </script>
+    </div>
+</body>
+</html>
